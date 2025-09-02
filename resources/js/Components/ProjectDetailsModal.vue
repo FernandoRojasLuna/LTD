@@ -4,26 +4,24 @@
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
         
         <!-- Modal Container -->
-        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden">
-            <!-- Enhanced Header with Corporate Design -->
-            <div class="relative bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 text-white overflow-hidden">
-                <!-- Background Pattern -->
-                <div class="absolute inset-0 opacity-10">
-                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <pattern id="topography" patternUnits="userSpaceOnUse" width="540" height="450">
-                                <rect x="0" y="0" width="540" height="450" fill="transparent"/>
-                                <path d="M540,450C540,450 540,225 540,225C540,225 405,270 270,225C135,180 0,225 0,225L0,450Z" fill="rgba(99, 102, 241, 0.1)"/>
-                                <path d="M540,450C540,450 540,337.5 540,337.5C540,337.5 405,382.5 270,337.5C135,292.5 0,337.5 0,337.5L0,450Z" fill="rgba(59, 130, 246, 0.05)"/>
-                            </pattern>
-                        </defs>
-                        <rect width="100%" height="100%" fill="url(#topography)"/>
-                    </svg>
-                </div>
+        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[95vh] overflow-hidden">
+            <!-- Enhanced Header with Project Image -->
+            <div class="relative h-64 text-white overflow-hidden">
+                <!-- Project Image Background -->
+                <div 
+                    v-if="project.image"
+                    class="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    :style="{ backgroundImage: `url(${project.image})` }"
+                ></div>
                 
-                <!-- Decorative Elements -->
-                <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-indigo-500/20 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
-                <div class="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-purple-500/20 to-transparent rounded-full translate-y-36 -translate-x-36"></div>
+                <!-- Fallback gradient background if no image -->
+                <div 
+                    v-else
+                    class="absolute inset-0 bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800"
+                ></div>
+                
+                <!-- Dark overlay for better text readability -->
+                <div class="absolute inset-0 bg-black/40 backdrop-blur-[0.5px]"></div>
                 
                 <div class="relative p-8">
                     <div class="flex items-start justify-between">
@@ -92,10 +90,10 @@
             <!-- Scrollable Content -->
             <div class="overflow-y-auto max-h-[calc(95vh-300px)]">
                 <!-- Content Grid -->
-                <div class="p-8 bg-gray-50">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <!-- Main Content (Left Column) -->
-                        <div class="lg:col-span-2 space-y-8">
+                <div class="p-4 bg-gray-50">
+                    <div class="space-y-8">
+                        <!-- Main Content -->
+                        <div class="space-y-8">
                             <!-- Project Description - PREMIUM DESIGN -->
                             <div class="bg-gradient-to-br from-white via-slate-50 to-gray-50 rounded-3xl p-8 shadow-xl border border-slate-200 relative overflow-hidden">
                                 <!-- Decorative Elements -->
@@ -235,7 +233,8 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <!-- Grid normal para 3 o menos tecnologías -->
+                                    <div v-if="project.technologies.length <= 3" class="grid grid-cols-2 lg:grid-cols-3 gap-6">
                                         <div 
                                             v-for="tech in project.technologies" 
                                             :key="tech.id"
@@ -247,7 +246,12 @@
                                             <!-- Tech Logo/Icon -->
                                             <div class="relative text-center">
                                                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110" :style="{ backgroundColor: tech.color + '20' }">
-                                                    <i :class="tech.icon" :style="{ color: tech.color }" class="text-3xl"></i>
+                                                    <!-- Icon fallback if tech.icon doesn't exist or load -->
+                                                    <div v-if="!tech.icon && !getTechIcon(tech.name)" class="w-8 h-8 rounded-lg flex items-center justify-center text-xl font-bold" :style="{ backgroundColor: tech.color, color: 'white' }">
+                                                        {{ tech.name.charAt(0) }}
+                                                    </div>
+                                                    <!-- Font icon if available (priority to database icon) -->
+                                                    <i v-else :class="tech.icon || getTechIcon(tech.name)" :style="{ color: tech.color }" class="text-3xl"></i>
                                                 </div>
                                                 
                                                 <!-- Tech Name -->
@@ -264,44 +268,125 @@
                                             <div class="absolute inset-0 border-2 border-transparent group-hover:border-opacity-50 rounded-2xl transition-all duration-500" :style="{ borderColor: tech.color }"></div>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Tech Stack Summary -->
-                                    <div class="mt-8 p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center space-x-4">
-                                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                                                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                                    </svg>
+
+                                    <!-- Carrusel para más de 3 tecnologías -->
+                                    <div v-else class="relative">
+                                        <div class="grid grid-cols-3 gap-6">
+                                            <div 
+                                                v-for="tech in getVisibleTechs" 
+                                                :key="`${tech.id}-${currentIndex}`"
+                                                class="group relative bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 cursor-pointer overflow-hidden"
+                                            >
+                                                <!-- Tech Card Background Gradient -->
+                                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" :style="{ background: `linear-gradient(135deg, ${tech.color}15, ${tech.color}25)` }"></div>
+                                                
+                                                <!-- Tech Logo/Icon -->
+                                                <div class="relative text-center">
+                                                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110" :style="{ backgroundColor: tech.color + '20' }">
+                                                        <!-- Icon fallback if tech.icon doesn't exist or load -->
+                                                        <div v-if="!tech.icon && !getTechIcon(tech.name)" class="w-8 h-8 rounded-lg flex items-center justify-center text-xl font-bold" :style="{ backgroundColor: tech.color, color: 'white' }">
+                                                            {{ tech.name.charAt(0) }}
+                                                        </div>
+                                                        <!-- Font icon if available (priority to database icon) -->
+                                                        <i v-else :class="tech.icon || getTechIcon(tech.name)" :style="{ color: tech.color }" class="text-3xl"></i>
+                                                    </div>
+                                                    
+                                                    <!-- Tech Name -->
+                                                    <h4 class="font-bold text-gray-900 text-lg mb-2 group-hover:text-gray-800 transition-colors duration-300">{{ tech.name }}</h4>
+                                                    
+                                                    <!-- Tech Category Badge -->
+                                                    <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300" :style="{ backgroundColor: tech.color + '20', color: tech.color }">
+                                                        <div class="w-2 h-2 rounded-full mr-2" :style="{ backgroundColor: tech.color }"></div>
+                                                        <span v-if="getTechCategory(tech.name)">{{ getTechCategory(tech.name) }}</span>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p class="font-semibold text-gray-900">Stack Moderno y Escalable</p>
-                                                    <p class="text-sm text-gray-600">{{ project.technologies.length }} tecnologías integradas</p>
-                                                </div>
+                                                
+                                                <!-- Hover Effect Overlay -->
+                                                <div class="absolute inset-0 border-2 border-transparent group-hover:border-opacity-50 rounded-2xl transition-all duration-500" :style="{ borderColor: tech.color }"></div>
                                             </div>
-                                            <div class="text-right">
-                                                <p class="text-lg font-bold text-indigo-600">Enterprise Grade</p>
-                                                <p class="text-xs text-gray-500">Nivel Corporativo</p>
+                                        </div>
+
+                                        <!-- Navegación del carrusel -->
+                                        <div class="mt-6 space-y-4">
+                                            <!-- Puntitos de navegación -->
+                                            <div class="flex justify-center space-x-2">
+                                                <button 
+                                                    v-for="(tech, index) in project.technologies" 
+                                                    :key="index"
+                                                    @click="goToSlide(index)"
+                                                    class="w-3 h-3 rounded-full transition-all duration-300 hover:scale-125 focus:outline-none"
+                                                    :class="index === currentIndex ? 'bg-indigo-500 shadow-lg' : 'bg-gray-300 hover:bg-gray-400'"
+                                                    :title="`Ver ${tech.name}`"
+                                                ></button>
+                                            </div>
+                                            
+                                            <!-- Controles de navegación -->
+                                            <div class="flex justify-center items-center space-x-6">
+                                                <!-- Botón anterior -->
+                                                <button 
+                                                    @click="previousSlide"
+                                                    class="flex items-center justify-center w-10 h-10 bg-white border-2 border-gray-200 rounded-full hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300 focus:outline-none group"
+                                                >
+                                                    <svg class="w-5 h-5 text-gray-600 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                                    </svg>
+                                                </button>
+
+                                                <!-- Indicador de posición -->
+                                                <div class="flex items-center text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-full">
+                                                    <div class="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+                                                    <span>{{ currentIndex + 1 }}-{{ Math.min(currentIndex + 3, project.technologies.length) }} de {{ project.technologies.length }}</span>
+                                                </div>
+
+                                                <!-- Botón siguiente -->
+                                                <button 
+                                                    @click="nextSlide"
+                                                    class="flex items-center justify-center w-10 h-10 bg-white border-2 border-gray-200 rounded-full hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300 focus:outline-none group"
+                                                >
+                                                    <svg class="w-5 h-5 text-gray-600 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <!-- Auto-play indicator -->
+                                            <div class="flex justify-center">
+                                                <button 
+                                                    @click="toggleAutoPlay"
+                                                    class="flex items-center text-xs text-gray-500 hover:text-gray-700 transition-colors focus:outline-none"
+                                                >
+                                                    <div :class="isAutoPlaying ? 'bg-green-400 animate-pulse' : 'bg-gray-400'" class="w-2 h-2 rounded-full mr-2"></div>
+                                                    <span>{{ isAutoPlaying ? 'Auto-play activo' : 'Auto-play pausado' }}</span>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Sidebar (Right Column) -->
-                        <div class="space-y-6">
-                            <!-- Project Timeline -->
-                            <div v-if="project.start_date || project.end_date" class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-                                <div class="flex items-center mb-6">
-                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                    </div>
-                                    <h4 class="text-lg font-semibold text-gray-900">Cronología</h4>
+
+
+                            <!-- CRONOLOGIA -->
+                            <div v-if="project.technologies && project.technologies.length > 0" class="bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 rounded-3xl p-8 shadow-xl border border-slate-200 relative overflow-hidden">
+                                <!-- Background Pattern -->
+                                <div class="absolute inset-0 opacity-5">
+                                    <div class="absolute inset-0" style="background-image: radial-gradient(circle at 25px 25px, lightgray 2px, transparent 0), radial-gradient(circle at 75px 75px, lightgray 2px, transparent 0); background-size: 100px 100px;"></div>
                                 </div>
-                                <div class="space-y-4">
+                                
+                                <div class="relative">
+                                    <div class="flex items-center mb-8">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mr-6 shadow-lg">
+                                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-1">Cronologia</h3>
+                                            <p class="text-gray-600">Tecnologías de vanguardia empresarial</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-4">
                                     <div v-if="project.start_date">
                                         <span class="text-sm font-medium text-blue-700">Fecha de Inicio:</span>
                                         <p class="text-blue-900 font-semibold">{{ formatDate(project.start_date) }}</p>
@@ -311,25 +396,38 @@
                                         <p class="text-blue-900 font-semibold">{{ formatDate(project.end_date) }}</p>
                                     </div>
                                 </div>
+                                </div>
                             </div>
 
-                            <!-- Project Status -->
-                            <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                                <div class="flex items-center mb-4">
-                                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <h4 class="text-lg font-semibold text-gray-900">Estado del Proyecto</h4>
+                            <!-- ESTADO DEL PROYECTO -->
+                            <div v-if="project.technologies && project.technologies.length > 0" class="bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 rounded-3xl p-8 shadow-xl border border-slate-200 relative overflow-hidden">
+                                <!-- Background Pattern -->
+                                <div class="absolute inset-0 opacity-5">
+                                    <div class="absolute inset-0" style="background-image: radial-gradient(circle at 25px 25px, lightgray 2px, transparent 0), radial-gradient(circle at 75px 75px, lightgray 2px, transparent 0); background-size: 100px 100px;"></div>
                                 </div>
-                                <div class="text-center">
-                                    <span :class="getStatusBadgeClass(project.status)" class="inline-block px-4 py-2 rounded-xl text-sm font-bold mb-3">
-                                        {{ getStatusLabel(project.status) }}
-                                    </span>
-                                    <p class="text-sm text-gray-600">{{ getStatusDescription(project.status) }}</p>
+                                
+                                <div class="relative">
+                                    <div class="flex items-center mb-8">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mr-6 shadow-lg">
+                                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-1">Cronologia</h3>
+                                            <p class="text-gray-600">Tecnologías de vanguardia empresarial</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <span :class="getStatusBadgeClass(project.status)" class="inline-block px-4 py-2 rounded-xl text-sm font-bold mb-3">
+                                            {{ getStatusLabel(project.status) }}
+                                        </span>
+                                        <p class="text-sm text-gray-600">{{ getStatusDescription(project.status) }}</p>
+                                    </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -339,7 +437,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 
 const props = defineProps({
     show: {
@@ -353,6 +451,143 @@ const props = defineProps({
 })
 
 defineEmits(['close'])
+
+// Variables del carrusel
+const currentIndex = ref(0)
+const carouselInterval = ref(null)
+const isAutoPlaying = ref(true)
+
+// Computed para obtener las 3 tecnologías visibles
+const getVisibleTechs = computed(() => {
+    if (!props.project.technologies || props.project.technologies.length <= 3) {
+        return props.project.technologies || []
+    }
+    
+    const techs = props.project.technologies
+    const visible = []
+    
+    for (let i = 0; i < 3; i++) {
+        const index = (currentIndex.value + i) % techs.length
+        visible.push(techs[index])
+    }
+    
+    return visible
+})
+
+// Funciones del carrusel
+const startCarousel = () => {
+    if (props.project.technologies && props.project.technologies.length > 3 && isAutoPlaying.value) {
+        carouselInterval.value = setInterval(() => {
+            rotateCarousel()
+        }, 3000) // Cambia cada 3 segundos
+    }
+}
+
+const stopCarousel = () => {
+    if (carouselInterval.value) {
+        clearInterval(carouselInterval.value)
+        carouselInterval.value = null
+    }
+}
+
+const rotateCarousel = () => {
+    if (props.project.technologies && props.project.technologies.length > 3) {
+        currentIndex.value = (currentIndex.value + 1) % props.project.technologies.length
+    }
+}
+
+// Nuevas funciones de navegación manual
+const goToSlide = (index) => {
+    currentIndex.value = index
+    stopCarousel()
+    isAutoPlaying.value = false
+    // Reinicia el auto-play después de 5 segundos de inactividad
+    setTimeout(() => {
+        isAutoPlaying.value = true
+        startCarousel()
+    }, 5000)
+}
+
+const nextSlide = () => {
+    if (props.project.technologies && props.project.technologies.length > 3) {
+        currentIndex.value = (currentIndex.value + 1) % props.project.technologies.length
+        stopCarousel()
+        isAutoPlaying.value = false
+        setTimeout(() => {
+            isAutoPlaying.value = true
+            startCarousel()
+        }, 5000)
+    }
+}
+
+const previousSlide = () => {
+    if (props.project.technologies && props.project.technologies.length > 3) {
+        currentIndex.value = currentIndex.value === 0 
+            ? props.project.technologies.length - 1 
+            : currentIndex.value - 1
+        stopCarousel()
+        isAutoPlaying.value = false
+        setTimeout(() => {
+            isAutoPlaying.value = true
+            startCarousel()
+        }, 5000)
+    }
+}
+
+const toggleAutoPlay = () => {
+    isAutoPlaying.value = !isAutoPlaying.value
+    if (isAutoPlaying.value) {
+        startCarousel()
+    } else {
+        stopCarousel()
+    }
+}
+
+// Watchers y lifecycle
+watch(() => props.show, (newValue) => {
+    if (newValue) {
+        currentIndex.value = 0
+        isAutoPlaying.value = true
+        startCarousel()
+    } else {
+        stopCarousel()
+    }
+})
+
+onMounted(() => {
+    if (props.show) {
+        startCarousel()
+    }
+})
+
+onUnmounted(() => {
+    stopCarousel()
+})
+
+// Helper function to get tech icon classes if not defined in database
+const getTechIcon = (techName) => {
+    const techIcons = {
+        'Vue.js': 'devicon-vuejs-plain',
+        'React': 'devicon-react-original',
+        'Angular': 'devicon-angularjs-plain',
+        'JavaScript': 'devicon-javascript-plain',
+        'TypeScript': 'devicon-typescript-plain',
+        'Laravel': 'devicon-laravel-plain',
+        'Node.js': 'devicon-nodejs-plain',
+        'PHP': 'devicon-php-plain',
+        'Python': 'devicon-python-plain',
+        'MySQL': 'devicon-mysql-plain',
+        'PostgreSQL': 'devicon-postgresql-plain',
+        'MongoDB': 'devicon-mongodb-plain',
+        'Docker': 'devicon-docker-plain',
+        'AWS': 'devicon-amazonwebservices-original',
+        'Git': 'devicon-git-plain',
+        'CSS': 'devicon-css3-plain',
+        'HTML': 'devicon-html5-plain',
+        'Tailwind CSS': 'devicon-tailwindcss-plain'
+    };
+    return techIcons[techName] || '';
+};
 
 const getStatusLabel = (status) => {
     const labels = {
