@@ -23,13 +23,11 @@ Route::prefix('public')->group(function () {
     Route::get('technologies', [TechnologyController::class, 'public']);
 });
 
-// Rutas protegidas (requieren autenticación)
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::apiResource('banners', BannerController::class);
-    Route::apiResource('contents', ContentController::class);
-    Route::apiResource('projects', ProjectController::class);
-    Route::apiResource('technologies', TechnologyController::class);
-});
+// Rutas API para administración (temporalmente sin autenticación para desarrollo)
+Route::apiResource('banners', BannerController::class);
+Route::apiResource('contents', ContentController::class);
+Route::apiResource('projects', ProjectController::class);
+Route::apiResource('technologies', TechnologyController::class);
 
 // Rutas de prueba para banners (sin autenticación ni CSRF)
 Route::prefix('test')->group(function () {

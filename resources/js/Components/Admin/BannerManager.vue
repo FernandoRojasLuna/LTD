@@ -408,11 +408,11 @@
                                         </div>
 
                                         <!-- Preview -->
-                                        <div v-if="bannerForm.image" class="mt-4">
+                                        <div v-if="imagePreview || bannerForm.image" class="mt-4">
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Vista previa</label>
                                             <div class="relative group">
                                                 <img
-                                                    :src="bannerForm.image"
+                                                    :src="imagePreview || bannerForm.image"
                                                     alt="Preview"
                                                     class="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm"
                                                     @error="handleImageError"
@@ -558,6 +558,7 @@ const successMessage = ref('')
 const errorMessage = ref('')
 const imageInputType = ref('file') // 'file' o 'url'
 const fileInput = ref(null)
+const imagePreview = ref('') // Para la vista previa de archivos
 
 // Form data
 const bannerForm = reactive({
@@ -586,6 +587,7 @@ const editBanner = (banner) => {
     bannerForm.image = banner.image
     bannerForm.order = banner.order
     bannerForm.active = banner.is_active
+    imagePreview.value = banner.image // Usar la imagen actual como preview
     imageInputType.value = 'file'
     errors.value = {}
     showModal.value = true
@@ -604,6 +606,7 @@ const resetForm = () => {
     bannerForm.image = ''
     bannerForm.order = 0
     bannerForm.active = true
+    imagePreview.value = ''
     imageInputType.value = 'file'
     if (fileInput.value) {
         fileInput.value.value = ''
@@ -612,6 +615,7 @@ const resetForm = () => {
 
 const clearImage = () => {
     bannerForm.image = ''
+    imagePreview.value = ''
     if (fileInput.value) {
         fileInput.value.value = ''
     }
@@ -635,12 +639,12 @@ const handleFileUpload = async (event) => {
     }
 
     try {
+        // Guardar el archivo para enviarlo al servidor
+        bannerForm.image = file
+        
         // Crear una URL temporal para la vista previa
-        const imageUrl = URL.createObjectURL(file)
-        bannerForm.image = imageUrl
+        imagePreview.value = URL.createObjectURL(file)
 
-        // Aquí podrías implementar la subida real del archivo a tu servidor
-        // Por ahora usamos la URL temporal para la vista previa
         console.log('Archivo seleccionado:', file.name)
         
     } catch (error) {
@@ -704,7 +708,19 @@ const deleteBanner = async (banner) => {
 }
 
 const handleImageError = (event) => {
-    event.target.src = '/images/placeholder.jpg'
+    // Evitar loop infinito - solo cambiar si no es ya el placeholder
+    if (!event.target.src.includes('data:image/svg+xml')) {
+        // Crear un SVG placeholder en base64 para evitar peticiones HTTP
+        const svgPlaceholder = `data:image/svg+xml;base64,${btoa(`
+            <svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100%" height="100%" fill="#f3f4f6"/>
+                <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="14" fill="#9ca3af" text-anchor="middle" dy=".3em">
+                    Imagen no disponible
+                </text>
+            </svg>
+        `)}`
+        event.target.src = svgPlaceholder
+    }
 }
 
 const formatDate = (dateString) => {

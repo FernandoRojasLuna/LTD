@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BannerController extends Controller
 {
@@ -26,15 +28,70 @@ class BannerController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:255',
-            'image' => 'required|string',
+            'image' => 'required', // Puede ser file o string (URL)
             'description' => 'nullable|string',
             'link' => 'nullable|url',
             'order' => 'integer|min:0',
-            'is_active' => 'boolean'
+            'is_active' => 'nullable|boolean'
         ]);
+
+        // Convertir is_active a boolean si viene como string
+        if (isset($validated['is_active'])) {
+            $validated['is_active'] = filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN);
+        } else {
+            $validated['is_active'] = true; // valor por defecto
+        }
+
+        // Manejar la imagen
+        if ($request->hasFile('image')) {
+            $imagePath = $this->uploadImage($request->file('image'));
+            $validated['image'] = $imagePath;
+        } elseif ($request->has('image') && filter_var($request->image, FILTER_VALIDATE_URL)) {
+            $validated['image'] = $request->image;
+        } else {
+            return response()->json(['error' => 'Se requiere una imagen válida'], 422);
+        }
 
         $banner = Banner::create($validated);
         return response()->json($banner, 201);
+    }
+
+    /**
+     * Upload image file and return path
+     */
+    private function uploadImage($file): string
+    {
+        // Validar el archivo
+        if (!$file->isValid()) {
+            throw new \Exception('Archivo no válido');
+        }
+
+        // Validar tipo de archivo
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!in_array($file->getMimeType(), $allowedTypes)) {
+            throw new \Exception('Tipo de archivo no permitido');
+        }
+
+        // Validar tamaño (máximo 5MB)
+        if ($file->getSize() > 5 * 1024 * 1024) {
+            throw new \Exception('El archivo es muy grande. Máximo 5MB');
+        }
+
+        // Generar nombre único
+        $extension = $file->getClientOriginalExtension();
+        $filename = Str::random(40) . '.' . $extension;
+        
+        // Crear directorio si no existe
+        $uploadPath = public_path('storage/banners');
+        if (!file_exists($uploadPath)) {
+            mkdir($uploadPath, 0755, true);
+        }
+
+        // Mover archivo
+        $file->move($uploadPath, $filename);
+
+        // Retornar URL relativa
+        return '/storage/banners/' . $filename;
     }
 
     /**
@@ -51,14 +108,35 @@ class BannerController extends Controller
     public function update(Request $request, Banner $banner): JsonResponse
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'sometimes|required|string|max:255',
             'subtitle' => 'nullable|string|max:255',
-            'image' => 'required|string',
+            'image' => 'sometimes|required', // Puede ser file o string (URL)
             'description' => 'nullable|string',
             'link' => 'nullable|url',
             'order' => 'integer|min:0',
-            'is_active' => 'boolean'
+            'is_active' => 'nullable|boolean'
         ]);
+
+        // Convertir is_active a boolean si viene como string
+        if (isset($validated['is_active'])) {
+            $validated['is_active'] = filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN);
+        }
+
+        // Manejar la imagen si se proporciona una nueva
+        if ($request->hasFile('image')) {
+            // Eliminar imagen anterior si existe y no es una URL
+            if ($banner->image && !filter_var($banner->image, FILTER_VALIDATE_URL)) {
+                $oldImagePath = public_path($banner->image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+            
+            $imagePath = $this->uploadImage($request->file('image'));
+            $validated['image'] = $imagePath;
+        } elseif ($request->has('image') && filter_var($request->image, FILTER_VALIDATE_URL)) {
+            $validated['image'] = $request->image;
+        }
 
         $banner->update($validated);
         return response()->json($banner);
@@ -69,6 +147,14 @@ class BannerController extends Controller
      */
     public function destroy(Banner $banner): JsonResponse
     {
+        // Eliminar imagen si existe y no es una URL
+        if ($banner->image && !filter_var($banner->image, FILTER_VALIDATE_URL)) {
+            $imagePath = public_path($banner->image);
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+        }
+        
         $banner->delete();
         return response()->json(null, 204);
     }

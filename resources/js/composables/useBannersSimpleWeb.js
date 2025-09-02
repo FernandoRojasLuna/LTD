@@ -10,12 +10,14 @@ export function useBannersSimpleWeb() {
         error.value = null
         
         try {
-            console.log('Fetching banners from SimpleBannerController...')
-            const response = await fetch('/api/test/banners', {
+            console.log('Fetching banners from API...')
+            const response = await fetch('/api/banners', {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
             })
             
@@ -24,7 +26,7 @@ export function useBannersSimpleWeb() {
             }
             
             const data = await response.json()
-            console.log('SimpleBannerController response:', data)
+            console.log('API response:', data)
             banners.value = data
             return data
         } catch (err) {
@@ -41,24 +43,34 @@ export function useBannersSimpleWeb() {
         error.value = null
         
         try {
-            console.log('Creating banner with SimpleBannerController:', bannerData)
+            console.log('Creating banner with data:', bannerData)
             
-            // Transformar los datos para que coincidan con la API del SimpleBannerController
-            const apiData = {
-                title: bannerData.title,
-                subtitle: bannerData.subtitle || null,
-                image: bannerData.image,
-                order: bannerData.order || 0,
-                is_active: bannerData.active !== undefined ? bannerData.active : true
+            // Crear FormData para manejar archivos
+            const formData = new FormData()
+            formData.append('title', bannerData.title)
+            
+            if (bannerData.subtitle) {
+                formData.append('subtitle', bannerData.subtitle)
             }
             
-            const response = await fetch('/api/test/banners', {
+            // Manejar la imagen (archivo o URL)
+            if (bannerData.image instanceof File) {
+                formData.append('image', bannerData.image)
+            } else if (typeof bannerData.image === 'string') {
+                formData.append('image', bannerData.image)
+            }
+            
+            formData.append('order', bannerData.order || 0)
+            formData.append('is_active', bannerData.active !== undefined ? (bannerData.active ? '1' : '0') : '1')
+            
+            const response = await fetch('/api/banners', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                body: JSON.stringify(apiData)
+                body: formData
             })
             
             if (!response.ok) {
@@ -87,24 +99,43 @@ export function useBannersSimpleWeb() {
         error.value = null
         
         try {
-            console.log('Updating banner with SimpleBannerController:', bannerId, bannerData)
+            console.log('Updating banner:', bannerId, bannerData)
             
-            // Transformar los datos para que coincidan con la API
-            const apiData = {
-                title: bannerData.title,
-                subtitle: bannerData.subtitle || null,
-                image: bannerData.image,
-                order: bannerData.order || 0,
-                is_active: bannerData.active !== undefined ? bannerData.active : true
+            // Crear FormData para manejar archivos
+            const formData = new FormData()
+            formData.append('_method', 'PUT') // Para simular PUT en formularios
+            
+            if (bannerData.title) {
+                formData.append('title', bannerData.title)
             }
             
-            const response = await fetch(`/api/test/banners/${bannerId}`, {
-                method: 'PUT',
+            if (bannerData.subtitle) {
+                formData.append('subtitle', bannerData.subtitle)
+            }
+            
+            // Manejar la imagen (archivo o URL)
+            if (bannerData.image instanceof File) {
+                formData.append('image', bannerData.image)
+            } else if (typeof bannerData.image === 'string') {
+                formData.append('image', bannerData.image)
+            }
+            
+            if (bannerData.order !== undefined) {
+                formData.append('order', bannerData.order)
+            }
+            
+            if (bannerData.active !== undefined) {
+                formData.append('is_active', bannerData.active ? '1' : '0')
+            }
+            
+            const response = await fetch(`/api/banners/${bannerId}`, {
+                method: 'POST', // Usamos POST con _method=PUT
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                body: JSON.stringify(apiData)
+                body: formData
             })
             
             if (!response.ok) {
@@ -133,13 +164,15 @@ export function useBannersSimpleWeb() {
         error.value = null
         
         try {
-            console.log('Deleting banner with SimpleBannerController:', bannerId)
+            console.log('Deleting banner:', bannerId)
             
-            const response = await fetch(`/api/test/banners/${bannerId}`, {
+            const response = await fetch(`/api/banners/${bannerId}`, {
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
             })
             
@@ -148,8 +181,12 @@ export function useBannersSimpleWeb() {
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
             }
             
-            const result = await response.json()
-            console.log('Banner deleted successfully:', result)
+            console.log('Banner deleted successfully')
+            
+            // Refrescar la lista de banners
+            await fetchBanners()
+            
+            return true
             
             // Refrescar la lista de banners
             await fetchBanners()
