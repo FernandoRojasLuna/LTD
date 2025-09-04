@@ -20,12 +20,14 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@laboratorio.com',
         ]);
 
-        // Llamar a los seeders de nuestro proyecto
+                // Llamar a los seeders de nuestro proyecto
         $this->call([
             BannerSeeder::class,
             ContentSeeder::class,
-            TechnologySeeder::class,
             ProjectSeeder::class,
+            TechnologySeeder::class,
+            StaffSeeder::class,
+            ClientSeeder::class,
         ]);
     }
 }

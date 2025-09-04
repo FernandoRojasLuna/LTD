@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\TechnologyController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\ClientController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -21,6 +23,9 @@ Route::prefix('public')->group(function () {
     Route::get('projects/status/{status}', [ProjectController::class, 'byStatus']);
     Route::get('projects/featured', [ProjectController::class, 'featured']);
     Route::get('technologies', [TechnologyController::class, 'public']);
+    Route::get('staff', [StaffController::class, 'index']);
+    Route::get('clients', [ClientController::class, 'index']);
+    Route::get('clients/testimonials', [ClientController::class, 'testimonials']);
 });
 
 // Rutas API para administración (temporalmente sin autenticación para desarrollo)
@@ -28,6 +33,8 @@ Route::apiResource('banners', BannerController::class);
 Route::apiResource('contents', ContentController::class);
 Route::apiResource('projects', ProjectController::class);
 Route::apiResource('technologies', TechnologyController::class);
+Route::apiResource('staff', StaffController::class);
+Route::apiResource('clients', ClientController::class);
 
 // Rutas de prueba para banners (sin autenticación ni CSRF)
 Route::prefix('test')->group(function () {

@@ -56,5 +56,13 @@ Route::middleware([
         Route::get('/technologies', function () {
             return Inertia::render('Admin/Technologies');
         })->name('technologies');
+        
+        Route::get('/staff', function () {
+            return Inertia::render('Admin/Staff');
+        })->name('staff');
+        
+        Route::get('/clients', function () {
+            return Inertia::render('Admin/Clients');
+        })->name('clients');
     });
 });
