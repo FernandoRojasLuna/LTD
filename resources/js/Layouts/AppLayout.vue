@@ -52,40 +52,29 @@ const logout = () => {
                                     Dashboard
                                 </NavLink>
                                 
-                                <!-- Admin Dropdown -->
-                                <div class="relative">
-                                    <Dropdown align="left" width="48">
-                                        <template #trigger>
-                                            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
-                                                Administración
-                                                <svg class="ms-2 -me-0.5 size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
-                                                </svg>
-                                            </button>
-                                        </template>
-
-                                        <template #content>
-                                            <DropdownLink :href="route('admin.projects')">
-                                                📋 Proyectos
-                                            </DropdownLink>
-                                            <DropdownLink :href="route('admin.staff')">
-                                                👥 Equipo
-                                            </DropdownLink>
-                                            <DropdownLink :href="route('admin.clients')">
-                                                🏢 Clientes
-                                            </DropdownLink>
-                                            <DropdownLink :href="route('admin.technologies')">
-                                                🔧 Tecnologías
-                                            </DropdownLink>
-                                            <DropdownLink :href="route('admin.contents')">
-                                                📄 Contenidos
-                                            </DropdownLink>
-                                            <DropdownLink :href="route('admin.banners')">
-                                                🎨 Banners
-                                            </DropdownLink>
-                                        </template>
-                                    </Dropdown>
-                                </div>
+                                <NavLink :href="route('admin.staff')" :active="route().current('admin.staff')">
+                                    👥 Equipo
+                                </NavLink>
+                                
+                                <NavLink :href="route('admin.clients')" :active="route().current('admin.clients')">
+                                    🏢 Clientes
+                                </NavLink>
+                                
+                                <NavLink :href="route('admin.projects')" :active="route().current('admin.projects')">
+                                    📋 Proyectos
+                                </NavLink>
+                                
+                                <NavLink :href="route('admin.technologies')" :active="route().current('admin.technologies')">
+                                    🔧 Tecnologías
+                                </NavLink>
+                                
+                                <NavLink :href="route('admin.contents')" :active="route().current('admin.contents')">
+                                    📄 Contenidos
+                                </NavLink>
+                                
+                                <NavLink :href="route('admin.banners')" :active="route().current('admin.banners')">
+                                    🎨 Banners
+                                </NavLink>
                             </div>
                         </div>
 
