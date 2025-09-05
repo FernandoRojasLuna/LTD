@@ -32,17 +32,48 @@ class StaffController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
+            // LOG: registrar llaves recibidas y presencia de archivo (temporal)
+            \Log::info('StaffController.store incoming keys: ' . implode(',', array_keys($request->all())));
+            \Log::info('StaffController.store content-type: ' . $request->header('content-type'));
+            \Log::info('StaffController.store hasFile image (before validate): ' . ($request->hasFile('image') ? 'yes' : 'no'));
+            if ($request->hasFile('image')) {
+                $f = $request->file('image');
+                \Log::info('StaffController.store file originalName: ' . $f->getClientOriginalName() . ' size:' . $f->getSize() . ' mime:' . $f->getMimeType());
+            }
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'position' => 'required|string|max:255',
                 'bio' => 'nullable|string',
-                'image' => 'nullable|string|max:255',
+                    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'email' => 'nullable|email|max:255',
                 'linkedin' => 'nullable|url|max:255',
                 'github' => 'nullable|url|max:255',
                 'active' => 'boolean',
                 'order' => 'integer|min:0'
             ]);
+
+            // LOG: registrar llaves recibidas y presencia de archivo (temporal)
+            \Log::info('StaffController.store request keys: ' . implode(',', array_keys($request->all())));
+            \Log::info('StaffController.store hasFile image: ' . ($request->hasFile('image') ? 'yes' : 'no'));
+            \Log::info('StaffController.store raw active input: ' . var_export($request->input('active'), true));
+
+            // Si se subió un archivo de imagen, guardarlo en public/storage/staff
+            if ($request->hasFile('image')) {
+                $uploadPath = public_path('storage/staff');
+                // Diagnostic logs
+                \Log::info('StaffController.store uploadPath: ' . $uploadPath);
+                \Log::info('StaffController.store is_dir(uploadPath): ' . (is_dir($uploadPath) ? 'yes' : 'no'));
+                \Log::info('StaffController.store is_writable(uploadPath): ' . (is_writable($uploadPath) ? 'yes' : 'no'));
+                \Log::info('StaffController.store public/storage realpath: ' . @realpath(public_path('storage')));
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                $extension = $request->file('image')->getClientOriginalExtension();
+                $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
+                $request->file('image')->move($uploadPath, $filename);
+                $validated['image'] = 'staff/' . $filename;
+            }
 
             $staff = Staff::create($validated);
 
@@ -51,6 +82,7 @@ class StaffController extends Controller
                 'staff' => $staff
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::warning('StaffController.store validation failed: ' . json_encode($e->errors()));
             return response()->json([
                 'message' => 'Error de validación',
                 'errors' => $e->errors()
@@ -88,13 +120,33 @@ class StaffController extends Controller
                 'name' => 'sometimes|required|string|max:255',
                 'position' => 'sometimes|required|string|max:255',
                 'bio' => 'nullable|string',
-                'image' => 'nullable|string|max:255',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
                 'email' => 'nullable|email|max:255',
                 'linkedin' => 'nullable|url|max:255',
                 'github' => 'nullable|url|max:255',
                 'active' => 'boolean',
                 'order' => 'integer|min:0'
             ]);
+
+            // Si se subió una nueva imagen, eliminar la anterior y guardar la nueva
+            if ($request->hasFile('image')) {
+                // Eliminar imagen anterior si existe
+                if ($staff->image) {
+                    $oldPath = public_path('storage/' . ltrim($staff->image, '/'));
+                    if (file_exists($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                }
+
+                $uploadPath = public_path('storage/staff');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                $extension = $request->file('image')->getClientOriginalExtension();
+                $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
+                $request->file('image')->move($uploadPath, $filename);
+                $validated['image'] = 'staff/' . $filename;
+            }
 
             $staff->update($validated);
 

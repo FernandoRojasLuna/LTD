@@ -59,12 +59,12 @@
             >
                 <!-- Member Image -->
                 <div class="aspect-w-16 aspect-h-9">
-                    <img
-                        :src="member.image || '/images/avatar-placeholder.jpg'"
-                        :alt="member.name"
-                        class="w-full h-48 object-cover"
-                        @error="handleImageError"
-                    />
+                        <img
+                            :src="imageUrl(member.image)"
+                            :alt="member.name"
+                            class="w-full h-48 object-cover"
+                            @error="handleImageError"
+                        />
                 </div>
 
                 <!-- Member Content -->
@@ -321,26 +321,26 @@
                                             Foto de Perfil
                                         </h4>
 
-                                        <!-- Input de URL -->
+                                        <!-- Input file: sólo archivos locales -->
                                         <div class="space-y-3">
                                             <input
-                                                v-model="memberForm.image"
-                                                type="url"
-                                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
-                                                :class="{ 'border-red-300 focus:ring-red-500 focus:border-red-500': errors.image }"
-                                                placeholder="https://ejemplo.com/foto.jpg"
+                                                ref="imageInput"
+                                                @change="onFileChange"
+                                                type="file"
+                                                accept="image/*"
+                                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700"
                                             />
                                             <p class="text-xs text-gray-500">
-                                                Recomendamos fotos cuadradas de al menos 400x400px
+                                                Sube una imagen desde tu equipo (jpeg, png, gif, webp). Recomendadas 400x400px.
                                             </p>
                                         </div>
 
                                         <!-- Preview -->
-                                        <div v-if="memberForm.image" class="mt-4">
+                                        <div v-if="imagePreview || memberForm.image" class="mt-4">
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Vista previa</label>
                                             <div class="relative group">
                                                 <img
-                                                    :src="memberForm.image"
+                                                    :src="imagePreview || imageUrl(memberForm.image)"
                                                     :alt="memberForm.name"
                                                     class="w-32 h-32 object-cover rounded-full border border-gray-200 shadow-sm mx-auto"
                                                     @error="handleImageError"
@@ -485,6 +485,9 @@ const saving = ref(false)
 const successMessage = ref('')
 const errorMessage = ref('')
 
+// small inline SVG placeholder to avoid 404
+const avatarPlaceholder = `data:image/svg+xml;base64,${btoa(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 200 200'><rect width='100%' height='100%' fill='%23f3f4f6'/><circle cx='100' cy='70' r='30' fill='%23d1d5db'/><path d='M60 140 Q60 120 100 120 Q140 120 140 140 L140 160 Q140 180 100 180 Q60 180 60 160 Z' fill='%23d1d5db'/><text x='50%' y='90%' font-family='Arial, sans-serif' font-size='10' fill='%239ca3af' text-anchor='middle'>Sin foto</text></svg>`)}`
+
 // Form data
 const memberForm = reactive({
     name: '',
@@ -535,6 +538,8 @@ const resetForm = () => {
     memberForm.position = ''
     memberForm.bio = ''
     memberForm.image = ''
+    imageFile.value = null
+    imagePreview.value = ''
     memberForm.email = ''
     memberForm.linkedin = ''
     memberForm.github = ''
@@ -544,6 +549,34 @@ const resetForm = () => {
 
 const clearImage = () => {
     memberForm.image = ''
+    imageFile.value = null
+    imagePreview.value = ''
+}
+
+const imageFile = ref(null)
+const imagePreview = ref('')
+
+const onFileChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    // validar tipo y tamaño client-side
+    if (!file.type.startsWith('image/')) {
+        showErrorMessage('El archivo debe ser una imagen')
+        e.target.value = null
+        return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        showErrorMessage('La imagen es demasiado grande (máx 5MB)')
+        e.target.value = null
+        return
+    }
+    imageFile.value = file
+    memberForm.image = '' // limpiar cualquier URL residual
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+        imagePreview.value = ev.target.result
+    }
+    reader.readAsDataURL(file)
 }
 
 const saveMember = async () => {
@@ -560,11 +593,13 @@ const saveMember = async () => {
     saving.value = true
 
     try {
-        if (editingMember.value) {
-            await updateStaffMember(editingMember.value.id, memberForm)
+                if (editingMember.value) {
+            console.log('Saving member (update):', memberForm, imageFile.value)
+            await updateStaffMember(editingMember.value.id, memberForm, imageFile.value)
             showSuccessMessage('Miembro del equipo actualizado correctamente')
         } else {
-            await createStaffMember(memberForm)
+            console.log('Saving member (create):', memberForm, imageFile.value)
+            await createStaffMember(memberForm, imageFile.value)
             showSuccessMessage('Miembro del equipo agregado correctamente')
         }
         closeModal()
@@ -615,6 +650,17 @@ const handleImageError = (event) => {
         `)}`
         event.target.src = svgPlaceholder
     }
+}
+
+const imageUrl = (path) => {
+    if (!path) return avatarPlaceholder
+    // Si la ruta ya es una URL absoluta, devolverla
+    if (path.startsWith('http') || path.startsWith('data:')) return path
+    // Si ya contiene '/storage/' no añadir doble prefijo
+    if (path.startsWith('/storage/') || path.startsWith('storage/')) return path.replace(/^\/+/, '/')
+    // Normalizar y prefijar /storage/
+    const normalized = path.replace(/^\/+/, '')
+    return `/storage/${normalized}`
 }
 
 const showSuccessMessage = (message) => {

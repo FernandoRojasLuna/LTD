@@ -32,9 +32,16 @@ class ClientController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
+            \Log::info('ClientController.store incoming keys: ' . implode(',', array_keys($request->all())));
+            \Log::info('ClientController.store content-type: ' . $request->header('content-type'));
+            \Log::info('ClientController.store hasFile logo (before validate): ' . ($request->hasFile('logo') ? 'yes' : 'no'));
+            if ($request->hasFile('logo')) {
+                $f = $request->file('logo');
+                \Log::info('ClientController.store file originalName: ' . $f->getClientOriginalName() . ' size:' . $f->getSize() . ' mime:' . $f->getMimeType());
+            }
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'company' => 'required|string|max:255',
+                'company' => 'nullable|string|max:255',
                 'logo' => 'nullable|string|max:255',
                 'website' => 'nullable|url|max:255',
                 'testimonial' => 'nullable|string',
@@ -43,6 +50,18 @@ class ClientController extends Controller
                 'order' => 'integer|min:0'
             ]);
 
+            // Si se subió un logo como archivo, moverlo a public/storage/clients
+            if ($request->hasFile('logo')) {
+                $uploadPath = public_path('storage/clients');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                $extension = $request->file('logo')->getClientOriginalExtension();
+                $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
+                $request->file('logo')->move($uploadPath, $filename);
+                $validated['logo'] = 'clients/' . $filename;
+            }
+
             $client = Client::create($validated);
 
             return response()->json([
@@ -50,6 +69,7 @@ class ClientController extends Controller
                 'client' => $client
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::warning('ClientController.store validation failed: ' . json_encode($e->errors()));
             return response()->json([
                 'message' => 'Error de validación',
                 'errors' => $e->errors()
@@ -93,6 +113,24 @@ class ClientController extends Controller
                 'active' => 'boolean',
                 'order' => 'integer|min:0'
             ]);
+
+            // Si se subió un nuevo logo como archivo, eliminar el anterior y guardar el nuevo
+            if ($request->hasFile('logo')) {
+                if ($client->logo) {
+                    $oldPath = public_path('storage/' . ltrim($client->logo, '/'));
+                    if (file_exists($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                }
+                $uploadPath = public_path('storage/clients');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                $extension = $request->file('logo')->getClientOriginalExtension();
+                $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
+                $request->file('logo')->move($uploadPath, $filename);
+                $validated['logo'] = 'clients/' . $filename;
+            }
 
             $client->update($validated);
 

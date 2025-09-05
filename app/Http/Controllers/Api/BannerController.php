@@ -80,8 +80,14 @@ class BannerController extends Controller
         // Generar nombre único
         $extension = $file->getClientOriginalExtension();
         $filename = Str::random(40) . '.' . $extension;
-        
-        // Crear directorio si no existe
+
+        // Crear ruta base si no existe
+        $basePath = public_path('storage');
+        if (!file_exists($basePath)) {
+            mkdir($basePath, 0755, true);
+        }
+
+        // Crear directorio específico si no existe
         $uploadPath = public_path('storage/banners');
         if (!file_exists($uploadPath)) {
             mkdir($uploadPath, 0755, true);

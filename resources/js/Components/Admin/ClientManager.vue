@@ -61,7 +61,7 @@
                 <div class="aspect-w-16 aspect-h-9 bg-gray-50">
                     <img
                         v-if="client.logo"
-                        :src="client.logo"
+                        :src="imageUrl(client.logo)"
                         :alt="client.name"
                         class="w-full h-32 object-contain p-4"
                         @error="handleImageError"
@@ -275,17 +275,18 @@
                                         />
                                     </div>
 
-                                    <!-- Logo -->
+                                    <!-- Logo (file) -->
                                     <div>
                                         <label for="logo" class="block text-sm font-semibold text-gray-900 mb-2">
-                                            Logo (URL)
+                                            Logo (subir archivo)
                                         </label>
                                         <input
+                                            ref="logoInput"
+                                            @change="onLogoChange"
                                             id="logo"
-                                            v-model="clientForm.logo"
-                                            type="url"
-                                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
-                                            placeholder="https://ejemplo.com/logo.png"
+                                            type="file"
+                                            accept="image/*"
+                                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700"
                                         />
                                         <p class="text-xs text-gray-500 mt-1">
                                             Recomendamos logos en formato PNG con fondo transparente
@@ -293,12 +294,12 @@
                                     </div>
 
                                     <!-- Preview del Logo -->
-                                    <div v-if="clientForm.logo" class="mt-4">
+                                    <div v-if="logoPreview || clientForm.logo" class="mt-4">
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Vista previa del logo</label>
                                         <div class="relative group">
                                             <div class="w-32 h-20 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center">
                                                 <img
-                                                    :src="clientForm.logo"
+                                                    :src="logoPreview || imageUrl(clientForm.logo)"
                                                     :alt="clientForm.name"
                                                     class="max-w-full max-h-full object-contain"
                                                     @error="handleImageError"
@@ -578,6 +579,31 @@ const clientForm = reactive({
 // Validation errors
 const errors = ref({})
 
+const logoFile = ref(null)
+const logoPreview = ref('')
+
+const onLogoChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+        showErrorMessage('El archivo debe ser una imagen')
+        e.target.value = null
+        return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        showErrorMessage('El logo es demasiado grande (máx 5MB)')
+        e.target.value = null
+        return
+    }
+    logoFile.value = file
+    clientForm.logo = '' // limpiar cualquier URL residual
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+        logoPreview.value = ev.target.result
+    }
+    reader.readAsDataURL(file)
+}
+
 // Methods
 const openCreateModal = () => {
     editingClient.value = null
@@ -627,6 +653,8 @@ const resetForm = () => {
 
 const clearLogo = () => {
     clientForm.logo = ''
+    logoFile.value = null
+    logoPreview.value = ''
 }
 
 const saveClient = async () => {
@@ -643,10 +671,10 @@ const saveClient = async () => {
 
     try {
         if (editingClient.value) {
-            await updateClient(editingClient.value.id, clientForm)
+            await updateClient(editingClient.value.id, clientForm, logoFile.value)
             showSuccessMessage('Cliente actualizado correctamente')
         } else {
-            await createClient(clientForm)
+            await createClient(clientForm, logoFile.value)
             showSuccessMessage('Cliente agregado correctamente')
         }
         closeModal()
@@ -737,6 +765,15 @@ const showErrorMessage = (message) => {
 onMounted(() => {
     fetchClients()
 })
+
+const imageUrl = (path) => {
+    if (!path) return '/'
+    if (path.startsWith('http') || path.startsWith('data:')) return path
+    // Si ya contiene '/storage/' no añadir doble prefijo
+    if (path.startsWith('/storage/') || path.startsWith('storage/')) return path.replace(/^\/+/, '/')
+    const normalized = path.replace(/^\/+/, '')
+    return `/storage/${normalized}`
+}
 </script>
 
 <style scoped>

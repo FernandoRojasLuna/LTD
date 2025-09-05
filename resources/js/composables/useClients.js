@@ -11,7 +11,13 @@ export function useClients() {
             loading.value = true
             error.value = null
             const response = await axios.get('/api/clients')
-            clients.value = response.data
+            // Normalizar logo: si es relativo, prefijar /storage/
+            clients.value = response.data.map(c => {
+                if (c.logo && !c.logo.startsWith('http') && !c.logo.startsWith('data:')) {
+                    c.logo = '/storage/' + c.logo.replace(/^\/+/, '')
+                }
+                return c
+            })
             return response.data
         } catch (err) {
             error.value = err.response?.data?.message || 'Error al cargar los clientes'
@@ -22,11 +28,28 @@ export function useClients() {
         }
     }
 
-    const createClient = async (clientData) => {
+    const createClient = async (clientData, file=null) => {
         try {
             loading.value = true
             error.value = null
-            const response = await axios.post('/api/clients', clientData)
+            let response
+            if (file) {
+                const fd = new FormData()
+                Object.keys(clientData).forEach(k => {
+                    const v = clientData[k]
+                    if (v !== undefined && v !== null) {
+                        if (typeof v === 'boolean') {
+                            fd.append(k, v ? '1' : '0')
+                        } else {
+                            fd.append(k, v)
+                        }
+                    }
+                })
+                fd.append('logo', file)
+                response = await axios.post('/api/clients', fd)
+            } else {
+                response = await axios.post('/api/clients', clientData)
+            }
             await fetchClients() // Refresh the list
             return response.data
         } catch (err) {
@@ -38,11 +61,28 @@ export function useClients() {
         }
     }
 
-    const updateClient = async (id, clientData) => {
+    const updateClient = async (id, clientData, file=null) => {
         try {
             loading.value = true
             error.value = null
-            const response = await axios.put(`/api/clients/${id}`, clientData)
+            let response
+            if (file) {
+                const fd = new FormData()
+                Object.keys(clientData).forEach(k => {
+                    const v = clientData[k]
+                    if (v !== undefined && v !== null) {
+                        if (typeof v === 'boolean') {
+                            fd.append(k, v ? '1' : '0')
+                        } else {
+                            fd.append(k, v)
+                        }
+                    }
+                })
+                fd.append('logo', file)
+                response = await axios.post(`/api/clients/${id}?_method=PUT`, fd)
+            } else {
+                response = await axios.put(`/api/clients/${id}`, clientData)
+            }
             await fetchClients() // Refresh the list
             return response.data
         } catch (err) {

@@ -22,11 +22,30 @@ export function useStaff() {
         }
     }
 
-    const createStaffMember = async (memberData) => {
+    const createStaffMember = async (memberData, file=null) => {
         try {
             loading.value = true
             error.value = null
-            const response = await axios.post('/api/staff', memberData)
+            let response
+            if (file) {
+                const fd = new FormData()
+                Object.keys(memberData).forEach(k => {
+                    if (k === 'image') return // la imagen se añade como file separado
+                    const v = memberData[k]
+                    if (v !== undefined && v !== null) {
+                        // Asegurar que los booleanos se envíen como '1'/'0' para que Laravel los valide con "boolean"
+                        if (typeof v === 'boolean') {
+                            fd.append(k, v ? '1' : '0')
+                        } else {
+                            fd.append(k, v)
+                        }
+                    }
+                })
+                fd.append('image', file)
+                response = await axios.post('/api/staff', fd)
+            } else {
+                response = await axios.post('/api/staff', memberData)
+            }
             await fetchStaff() // Refresh the list
             return response.data
         } catch (err) {
@@ -38,11 +57,30 @@ export function useStaff() {
         }
     }
 
-    const updateStaffMember = async (id, memberData) => {
+    const updateStaffMember = async (id, memberData, file=null) => {
         try {
             loading.value = true
             error.value = null
-            const response = await axios.put(`/api/staff/${id}`, memberData)
+            let response
+            if (file) {
+                const fd = new FormData()
+                Object.keys(memberData).forEach(k => {
+                    if (k === 'image') return // la imagen se añade como file separado
+                    const v = memberData[k]
+                    if (v !== undefined && v !== null) {
+                        // Asegurar que los booleanos se envíen como '1'/'0' para que Laravel los valide con "boolean"
+                        if (typeof v === 'boolean') {
+                            fd.append(k, v ? '1' : '0')
+                        } else {
+                            fd.append(k, v)
+                        }
+                    }
+                })
+                fd.append('image', file)
+                response = await axios.post(`/api/staff/${id}?_method=PUT`, fd)
+            } else {
+                response = await axios.put(`/api/staff/${id}`, memberData)
+            }
             await fetchStaff() // Refresh the list
             return response.data
         } catch (err) {
