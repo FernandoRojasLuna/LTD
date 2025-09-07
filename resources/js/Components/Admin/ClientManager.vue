@@ -197,7 +197,7 @@
                         <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
                             <div class="flex items-center justify-between">
                                 <h3 class="text-xl font-semibold text-white">
-                                    {{ editingClient ? 'Editar Cliente' : 'Agregar Nuevo Cliente' }}
+                                    {{ editingClient ? 'Editar Cliente' : 'Agregar Nuevo Clienteeeee' }}
                                 </h3>
                                 <button
                                     type="button"
@@ -294,28 +294,7 @@
                                     </div>
 
                                     <!-- Preview del Logo -->
-                                    <div v-if="logoPreview || clientForm.logo" class="mt-4">
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Vista previa del logo</label>
-                                        <div class="relative group">
-                                            <div class="w-32 h-20 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center">
-                                                <img
-                                                    :src="logoPreview || imageUrl(clientForm.logo)"
-                                                    :alt="clientForm.name"
-                                                    class="max-w-full max-h-full object-contain"
-                                                    @error="handleImageError"
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                @click="clearLogo"
-                                                class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full shadow-lg transition-all duration-200"
-                                            >
-                                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <!-- Vista previa del logo ocultada por requerimiento del usuario -->
 
                                     <!-- Configuraciones -->
                                     <div class="grid grid-cols-2 gap-4">
@@ -581,6 +560,8 @@ const errors = ref({})
 
 const logoFile = ref(null)
 const logoPreview = ref('')
+// template ref for the file input (used instead of $refs)
+const logoInput = ref(null)
 
 const onLogoChange = (e) => {
     const file = e.target.files[0]
@@ -608,6 +589,13 @@ const onLogoChange = (e) => {
 const openCreateModal = () => {
     editingClient.value = null
     resetForm()
+    clearLogo()
+    logoFile.value = null
+    logoPreview.value = ''
+    clientForm.logo = ''
+    if (logoInput.value) {
+        logoInput.value.value = ''
+    }
     showModal.value = true
 }
 
@@ -670,6 +658,10 @@ const saveClient = async () => {
     saving.value = true
 
     try {
+        // Si no hay archivo de logo, asegúrate de que clientForm.logo esté vacío
+        if (!logoFile.value) {
+            clientForm.logo = ''
+        }
         if (editingClient.value) {
             await updateClient(editingClient.value.id, clientForm, logoFile.value)
             showSuccessMessage('Cliente actualizado correctamente')
@@ -677,6 +669,13 @@ const saveClient = async () => {
             await createClient(clientForm, logoFile.value)
             showSuccessMessage('Cliente agregado correctamente')
         }
+        // Limpiar todo el formulario y la imagen
+        resetForm()
+        clearLogo()
+        if (logoInput.value) {
+            logoInput.value.value = ''
+        }
+        editingClient.value = null
         closeModal()
     } catch (error) {
         if (error.response?.data?.errors) {

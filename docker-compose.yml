@@ -16,6 +16,8 @@ services:
     depends_on:
       - mysql
       - redis
+    ports:
+      - "5174:5174"
 
   nginx:
     image: nginx:alpine

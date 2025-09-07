@@ -32,17 +32,11 @@ class ClientController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            \Log::info('ClientController.store incoming keys: ' . implode(',', array_keys($request->all())));
-            \Log::info('ClientController.store content-type: ' . $request->header('content-type'));
-            \Log::info('ClientController.store hasFile logo (before validate): ' . ($request->hasFile('logo') ? 'yes' : 'no'));
-            if ($request->hasFile('logo')) {
-                $f = $request->file('logo');
-                \Log::info('ClientController.store file originalName: ' . $f->getClientOriginalName() . ' size:' . $f->getSize() . ' mime:' . $f->getMimeType());
-            }
+            // ...existing code...
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'company' => 'nullable|string|max:255',
-                'logo' => 'nullable|string|max:255',
+                'logo' => 'nullable|file|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
                 'website' => 'nullable|url|max:255',
                 'testimonial' => 'nullable|string',
                 'project_count' => 'integer|min:1',
@@ -69,7 +63,6 @@ class ClientController extends Controller
                 'client' => $client
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::warning('ClientController.store validation failed: ' . json_encode($e->errors()));
             return response()->json([
                 'message' => 'Error de validación',
                 'errors' => $e->errors()
@@ -106,7 +99,7 @@ class ClientController extends Controller
             $validated = $request->validate([
                 'name' => 'sometimes|required|string|max:255',
                 'company' => 'sometimes|required|string|max:255',
-                'logo' => 'nullable|string|max:255',
+                'logo' => 'nullable|file|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
                 'website' => 'nullable|url|max:255',
                 'testimonial' => 'nullable|string',
                 'project_count' => 'integer|min:1',
