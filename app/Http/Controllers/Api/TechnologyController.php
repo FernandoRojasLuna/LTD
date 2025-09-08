@@ -23,16 +23,46 @@ class TechnologyController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'icon' => 'nullable|string|max:255',
-            'color' => 'string|max:7',
-            'description' => 'nullable|string',
-            'is_active' => 'boolean'
-        ]);
+        try {
+            // Validación condicional: si se envía archivo validar como file, si no permitir string (clase o ruta)
+            $rules = [
+                'name' => 'required|string|max:255',
+                'color' => 'string|max:7',
+                'description' => 'nullable|string',
+                'is_active' => 'boolean'
+            ];
+            if ($request->hasFile('icon')) {
+                $rules['icon'] = 'file|mimes:jpg,jpeg,png,gif,svg,webp|max:2048';
+            } else {
+                $rules['icon'] = 'nullable|string|max:255';
+            }
+            $validated = $request->validate($rules);
 
-        $technology = Technology::create($validated);
-        return response()->json($technology, 201);
+            // Si se subió un icono como archivo, moverlo a public/storage/technologies
+            if ($request->hasFile('icon')) {
+                $uploadPath = public_path('storage/technologies');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                $extension = $request->file('icon')->getClientOriginalExtension();
+                $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
+                $request->file('icon')->move($uploadPath, $filename);
+                $validated['icon'] = 'technologies/' . $filename;
+            }
+
+            $technology = Technology::create($validated);
+            return response()->json($technology, 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al crear la tecnología',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -48,16 +78,52 @@ class TechnologyController extends Controller
      */
     public function update(Request $request, Technology $technology): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'icon' => 'nullable|string|max:255',
-            'color' => 'string|max:7',
-            'description' => 'nullable|string',
-            'is_active' => 'boolean'
-        ]);
+        try {
+            // Validación condicional en update: si se envía archivo validar como file, si no permitir string
+            $rules = [
+                'name' => 'required|string|max:255',
+                'color' => 'string|max:7',
+                'description' => 'nullable|string',
+                'is_active' => 'boolean'
+            ];
+            if ($request->hasFile('icon')) {
+                $rules['icon'] = 'file|mimes:jpg,jpeg,png,gif,svg,webp|max:2048';
+            } else {
+                $rules['icon'] = 'nullable|string|max:255';
+            }
+            $validated = $request->validate($rules);
 
-        $technology->update($validated);
-        return response()->json($technology);
+            // Si se subió un nuevo icono como archivo, eliminar el anterior y guardar el nuevo
+            if ($request->hasFile('icon')) {
+                if ($technology->icon) {
+                    $oldPath = public_path('storage/' . ltrim($technology->icon, '/'));
+                    if (file_exists($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                }
+                $uploadPath = public_path('storage/technologies');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                $extension = $request->file('icon')->getClientOriginalExtension();
+                $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
+                $request->file('icon')->move($uploadPath, $filename);
+                $validated['icon'] = 'technologies/' . $filename;
+            }
+
+            $technology->update($validated);
+            return response()->json($technology);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar la tecnología',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

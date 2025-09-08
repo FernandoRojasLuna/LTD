@@ -68,12 +68,12 @@ const logout = () => {
                                     🔧 Tecnologías
                                 </NavLink>
                                 
-                                <NavLink :href="route('admin.contents')" :active="route().current('admin.contents')">
-                                    📄 Contenidos
-                                </NavLink>
-                                
                                 <NavLink :href="route('admin.banners')" :active="route().current('admin.banners')">
                                     🎨 Banners
+                                </NavLink>
+                                
+                                <NavLink :href="route('admin.contacts')" :active="route().current('admin.contacts')">
+                                    📬 Contacto
                                 </NavLink>
                             </div>
                         </div>
@@ -244,6 +244,9 @@ const logout = () => {
                             </ResponsiveNavLink>
                             <ResponsiveNavLink :href="route('admin.banners')" :active="route().current('admin.banners')">
                                 🎨 Banners
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink :href="route('admin.contacts')" :active="route().current('admin.contacts')">
+                                📬 Contacto
                             </ResponsiveNavLink>
                         </div>
                     </div>

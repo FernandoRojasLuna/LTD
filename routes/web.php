@@ -64,5 +64,9 @@ Route::middleware([
         Route::get('/clients', function () {
             return Inertia::render('Admin/Clients');
         })->name('clients');
+
+        Route::get('/contacts', function () {
+            return Inertia::render('Admin/ContactSettings');
+        })->name('contacts');
     });
 });

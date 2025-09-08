@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\TechnologyController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\Api\ContactSettingController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -35,6 +36,9 @@ Route::apiResource('projects', ProjectController::class);
 Route::apiResource('technologies', TechnologyController::class);
 Route::apiResource('staff', StaffController::class);
 Route::apiResource('clients', ClientController::class);
+// Contact settings singleton (GET/PUT)
+Route::get('contact-settings', [ContactSettingController::class, 'show']);
+Route::put('contact-settings', [ContactSettingController::class, 'update']);
 
 // Rutas de prueba para banners (sin autenticación ni CSRF)
 Route::prefix('test')->group(function () {
