@@ -68,5 +68,12 @@ Route::middleware([
         Route::get('/contacts', function () {
             return Inertia::render('Admin/ContactSettings');
         })->name('contacts');
+
+    // Admin API for contacts listing and marking
+    Route::get('/contacts/list', [App\Http\Controllers\ContactController::class, 'index'])->name('contacts.list');
+    Route::post('/contacts/{id}/read', [App\Http\Controllers\ContactController::class, 'markRead'])->name('contacts.read');
     });
 });
+
+// Public contact form endpoint
+Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');

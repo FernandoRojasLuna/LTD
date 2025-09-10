@@ -24,26 +24,37 @@
                     <p class="text-xl text-gray-600 max-w-3xl mx-auto">Ofrecemos soluciones integrales en transformación digital, combinando innovación y experiencia.</p>
                 </div>
 
-                <!-- Mobile grid fallback -->
-                <div class="block lg:hidden grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div v-for="content in contents" :key="content.id" class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
-                        <div v-if="content.image" class="mb-4">
-                            <img :src="content.image" :alt="content.title" class="w-full h-48 object-cover rounded-lg" loading="lazy" />
-                        </div>
-                        <h4 class="text-xl font-semibold text-gray-900 mb-3">{{ content.title }}</h4>
-                        <div class="text-gray-600 line-clamp-3" v-html="content.content"></div>
-                        <div class="mt-4 flex justify-center">
-                            <div class="flex justify-center">
-                                <span :class="[getTypeColor(content.type), 'badge-corporate inline-flex items-center gap-2']">
-                                    <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                        <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
-                                        <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
-                                        <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
-                                    </svg>
-                                    <span class="badge-text">{{ getTypeLabel(content.type) }}</span>
-                                </span>
+                <!-- Mobile carousel (1-up on small screens) -->
+                <div class="block lg:hidden">
+                    <div class="relative" @mouseenter="stopAutoplay" @mouseleave="startAutoplay">
+                        <div class="overflow-hidden">
+                            <div class="flex transition-transform duration-500 ease-in-out">
+                                <div v-for="(content, i) in visibleItems" :key="`mobile-card-${content.id}-${i}`" class="w-full px-4">
+                                    <div class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                                        <div v-if="content.image" class="mb-4">
+                                            <img :src="content.image" :alt="content.title" class="w-full h-48 object-cover rounded-lg" loading="lazy" />
+                                        </div>
+                                        <h4 class="text-xl font-semibold text-gray-900 mb-3">{{ content.title }}</h4>
+                                        <div class="text-gray-600 line-clamp-3" v-html="content.content"></div>
+                                        <div class="mt-4 flex justify-center">
+                                            <div class="flex justify-center">
+                                                <span :class="[getTypeColor(content.type), 'badge-corporate inline-flex items-center gap-2']">
+                                                    <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                                        <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
+                                                        <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
+                                                        <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
+                                                    </svg>
+                                                    <span class="badge-text">{{ getTypeLabel(content.type) }}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        <button class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3" @click="prev" aria-label="Anterior">‹</button>
+                        <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3" @click="next" aria-label="Siguiente">›</button>
                     </div>
                 </div>
 
@@ -108,14 +119,36 @@ const contents = ref([])
 const index = ref(0)
 const intervalRef = ref(null)
 const delay = 3000
+const visibleCount = ref(window.innerWidth >= 1024 ? 3 : 1)
+
+const updateVisibleCount = () => {
+    visibleCount.value = window.innerWidth >= 1024 ? 3 : 1
+}
+
+window.addEventListener('resize', updateVisibleCount)
 
 const getVisibleCards = computed(() => {
     const items = contents.value || []
+    const count = 3
     if (items.length === 0) return []
-    if (items.length <= 3) return items.slice()
+    if (items.length <= count) return items.slice()
 
     const visible = []
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < count; i++) {
+        const idx = (index.value + i) % items.length
+        visible.push(items[idx])
+    }
+    return visible
+})
+
+const visibleItems = computed(() => {
+    const items = contents.value || []
+    const count = visibleCount.value
+    if (items.length === 0) return []
+    if (items.length <= count) return items.slice()
+
+    const visible = []
+    for (let i = 0; i < count; i++) {
         const idx = (index.value + i) % items.length
         visible.push(items[idx])
     }
@@ -125,7 +158,7 @@ const getVisibleCards = computed(() => {
 const startAutoplay = () => {
     stopAutoplay()
     intervalRef.value = setInterval(() => {
-        if (!contents.value || contents.value.length <= 3) return
+        if (!contents.value || contents.value.length <= 1) return
         index.value = (index.value + 1) % contents.value.length
     }, delay)
 }
@@ -138,16 +171,19 @@ const stopAutoplay = () => {
 }
 
 const next = () => {
-    if (!contents.value || contents.value.length <= 3) return
+    if (!contents.value || contents.value.length <= 1) return
     index.value = (index.value + 1) % contents.value.length
 }
 
 const prev = () => {
-    if (!contents.value || contents.value.length <= 3) return
+    if (!contents.value || contents.value.length <= 1) return
     index.value = (index.value - 1 + contents.value.length) % contents.value.length
 }
 
-onBeforeUnmount(() => stopAutoplay())
+onBeforeUnmount(() => {
+    stopAutoplay()
+    window.removeEventListener('resize', updateVisibleCount)
+})
 
 // Methods: fetch content
 const fetchFeaturedContent = async () => {

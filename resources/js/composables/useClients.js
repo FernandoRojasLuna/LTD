@@ -65,24 +65,23 @@ export function useClients() {
         try {
             loading.value = true
             error.value = null
-            let response
-            if (file) {
-                const fd = new FormData()
-                Object.keys(clientData).forEach(k => {
-                    const v = clientData[k]
-                    if (v !== undefined && v !== null) {
-                        if (typeof v === 'boolean') {
-                            fd.append(k, v ? '1' : '0')
-                        } else {
-                            fd.append(k, v)
-                        }
+            // Always send FormData via POST + _method=PUT to ensure backend receives all fields
+            const fd = new FormData()
+            Object.keys(clientData).forEach(k => {
+                const v = clientData[k]
+                if (v !== undefined && v !== null) {
+                    if (typeof v === 'boolean') {
+                        fd.append(k, v ? '1' : '0')
+                    } else {
+                        fd.append(k, v)
                     }
-                })
+                }
+            })
+            if (file) {
                 fd.append('logo', file)
-                response = await axios.post(`/api/clients/${id}?_method=PUT`, fd)
-            } else {
-                response = await axios.put(`/api/clients/${id}`, clientData)
             }
+            const response = await axios.post(`/api/clients/${id}?_method=PUT`, fd)
+
             await fetchClients() // Refresh the list
             return response.data
         } catch (err) {

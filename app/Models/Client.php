@@ -14,7 +14,10 @@ class Client extends Model
         'company',
         'logo',
         'website',
-        'testimonial',
+    'testimonial',
+    'testimonial_author',
+    'testimonial_position',
+    'rating',
         'project_count',
         'active',
         'order'
@@ -24,6 +27,7 @@ class Client extends Model
         'active' => 'boolean',
         'project_count' => 'integer',
         'order' => 'integer',
+    'rating' => 'integer'
     ];
 
     public function scopeActive($query)

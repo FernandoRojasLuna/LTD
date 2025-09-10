@@ -39,6 +39,9 @@ class ClientController extends Controller
                 'logo' => 'nullable|file|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
                 'website' => 'nullable|url|max:255',
                 'testimonial' => 'nullable|string',
+                'testimonial_author' => 'nullable|string|max:255',
+                'testimonial_position' => 'nullable|string|max:255',
+                'rating' => 'nullable|integer|min:1|max:5',
                 'project_count' => 'integer|min:1',
                 'active' => 'boolean',
                 'order' => 'integer|min:0'
@@ -102,6 +105,9 @@ class ClientController extends Controller
                 'logo' => 'nullable|file|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
                 'website' => 'nullable|url|max:255',
                 'testimonial' => 'nullable|string',
+                'testimonial_author' => 'nullable|string|max:255',
+                'testimonial_position' => 'nullable|string|max:255',
+                'rating' => 'nullable|integer|min:1|max:5',
                 'project_count' => 'integer|min:1',
                 'active' => 'boolean',
                 'order' => 'integer|min:0'

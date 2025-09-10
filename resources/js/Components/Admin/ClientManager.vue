@@ -118,9 +118,26 @@
                         <p class="text-xs text-gray-600 italic line-clamp-3">
                             "{{ client.testimonial }}"
                         </p>
-                        <p v-if="client.testimonial_author" class="text-xs font-medium text-gray-800 mt-1">
-                            - {{ client.testimonial_author }}
-                        </p>
+                        <div class="mt-2 flex items-center justify-between">
+                            <div>
+                                <p v-if="client.testimonial_author" class="text-xs font-medium text-gray-800">
+                                    - {{ client.testimonial_author }}
+                                </p>
+                                <p v-if="client.testimonial_position" class="text-xs text-gray-500">
+                                    {{ client.testimonial_position }}
+                                </p>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <template v-for="n in 5" :key="n">
+                                    <svg v-if="n <= Math.round(client.rating || 0)" class="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.067 10.1c-.783-.57-.38-1.81.588-1.81h4.915a1 1 0 00.95-.69L9.05 2.927z" />
+                                    </svg>
+                                    <svg v-else class="h-4 w-4 text-gray-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.067 10.1c-.783-.57-.38-1.81.588-1.81h4.915a1 1 0 00.95-.69L9.05 2.927z" />
+                                    </svg>
+                                </template>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -658,15 +675,23 @@ const saveClient = async () => {
     saving.value = true
 
     try {
-        // Si no hay archivo de logo, asegúrate de que clientForm.logo esté vacío
+        // Construir payload sin sobrescribir logo si no se subió un archivo nuevo
+        const payload = { ...clientForm }
         if (!logoFile.value) {
-            clientForm.logo = ''
+            if (editingClient.value) {
+                // al editar y no cambiar logo, no enviar la propiedad para evitar sobrescribirla con vacío
+                delete payload.logo
+            } else {
+                // al crear sin archivo, enviar logo vacío (backend lo aceptará como null/omit)
+                payload.logo = ''
+            }
         }
+
         if (editingClient.value) {
-            await updateClient(editingClient.value.id, clientForm, logoFile.value)
+            await updateClient(editingClient.value.id, payload, logoFile.value)
             showSuccessMessage('Cliente actualizado correctamente')
         } else {
-            await createClient(clientForm, logoFile.value)
+            await createClient(payload, logoFile.value)
             showSuccessMessage('Cliente agregado correctamente')
         }
         // Limpiar todo el formulario y la imagen
