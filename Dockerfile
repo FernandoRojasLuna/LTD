@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libmagic-dev \
     zip \
     unzip \
     nodejs \
@@ -16,7 +17,11 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Instalar extensiones de PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN apt-get update && apt-get install -y libmagic-dev file \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+
+# enable fileinfo (should be available by default, but ensure it)
+RUN docker-php-ext-install fileinfo || true
 
 # Obtener Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

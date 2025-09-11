@@ -22,6 +22,8 @@ class Content extends Model
         'is_active' => 'boolean'
     ];
 
+    protected $appends = ['image_url'];
+
     // Scope para contenido activo
     public function scopeActive($query)
     {
@@ -50,5 +52,12 @@ class Content extends Model
                 $content->slug = Str::slug($content->title);
             }
         });
+    }
+
+    // Accessor para URL pública de la imagen
+    public function getImageUrlAttribute()
+    {
+        if (!$this->image) return null;
+        return asset('storage/' . $this->image);
     }
 }

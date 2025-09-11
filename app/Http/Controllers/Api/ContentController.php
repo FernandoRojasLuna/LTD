@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Content;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class ContentController extends Controller
 {
@@ -23,17 +25,55 @@ class ContentController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
+        $rules = [
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'type' => 'string|in:general,service,technology,area',
-            'image' => 'nullable|string',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
             'is_featured' => 'boolean',
             'is_active' => 'boolean'
-        ]);
+        ];
 
-        $content = Content::create($validated);
-        return response()->json($content, 201);
+        $v = Validator::make($request->all(), $rules);
+        if ($v->fails()) {
+            return response()->json(['errors' => $v->errors()], 422);
+        }
+
+        try {
+            $validated = $v->validated();
+            // handle file upload
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('contents', 'public');
+                $validated['image'] = $path;
+            }
+
+            $content = Content::create($validated);
+            return response()->json($content, 201);
+        } catch (\Throwable $e) {
+            $fileInfo = null;
+            try {
+                if ($request->hasFile('image')) {
+                    $f = $request->file('image');
+                    $fileInfo = [
+                        'client_name' => $f->getClientOriginalName(),
+                        'client_mime' => $f->getClientMimeType(),
+                        'server_mime' => $f->getMimeType(),
+                        'size' => $f->getSize(),
+                    ];
+                }
+            } catch (\Throwable $_) {
+                // ignore file inspection errors
+            }
+
+            Log::error('ContentController@store error', [
+                'message' => $e->getMessage(),
+                'request_keys' => array_keys($request->all()),
+                'has_file' => $request->hasFile('image'),
+                'file_info' => $fileInfo,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -49,17 +89,59 @@ class ContentController extends Controller
      */
     public function update(Request $request, Content $content): JsonResponse
     {
-        $validated = $request->validate([
+        $rules = [
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'type' => 'string|in:general,service,technology,area',
-            'image' => 'nullable|string',
+            // use `image` rule which accepts common image types and is more robust
+            'image' => 'nullable|image|max:2048',
             'is_featured' => 'boolean',
             'is_active' => 'boolean'
-        ]);
+        ];
 
-        $content->update($validated);
-        return response()->json($content);
+        $v = Validator::make($request->all(), $rules);
+        if ($v->fails()) {
+            return response()->json(['errors' => $v->errors()], 422);
+        }
+
+        try {
+            $validated = $v->validated();
+            if ($request->hasFile('image')) {
+                // delete old if exists
+                if ($content->image) {
+                    \Storage::disk('public')->delete($content->image);
+                }
+                $path = $request->file('image')->store('contents', 'public');
+                $validated['image'] = $path;
+            }
+
+            $content->update($validated);
+            return response()->json($content);
+        } catch (\Throwable $e) {
+            $fileInfo = null;
+            try {
+                if ($request->hasFile('image')) {
+                    $f = $request->file('image');
+                    $fileInfo = [
+                        'client_name' => $f->getClientOriginalName(),
+                        'client_mime' => $f->getClientMimeType(),
+                        'server_mime' => $f->getMimeType(),
+                        'size' => $f->getSize(),
+                    ];
+                }
+            } catch (\Throwable $_) {
+                // ignore file inspection errors
+            }
+
+            Log::error('ContentController@update error', [
+                'message' => $e->getMessage(),
+                'request_keys' => array_keys($request->all()),
+                'has_file' => $request->hasFile('image'),
+                'file_info' => $fileInfo,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**

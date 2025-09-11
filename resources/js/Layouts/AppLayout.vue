@@ -72,6 +72,10 @@ const logout = () => {
                                     🎨 Banners
                                 </NavLink>
                                 
+                                <NavLink :href="route('admin.contents')" :active="route().current('admin.contents')">
+                                    🗂️ Especialidades
+                                </NavLink>
+                                
                                 <NavLink :href="route('admin.contacts')" :active="route().current('admin.contacts')">
                                     📬 Contacto
                                 </NavLink>

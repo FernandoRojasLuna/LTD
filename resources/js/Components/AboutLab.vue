@@ -12,7 +12,7 @@
                         <div class="prose prose-lg max-w-none text-gray-700" v-html="featuredContent.content"></div>
                     </div>
                     <div class="order-1 lg:order-2">
-                        <img :src="featuredContent.image" :alt="featuredContent.title" class="w-full h-96 object-cover rounded-lg shadow-lg" />
+                        <img :src="featuredContent.image_url || featuredContent.image" :alt="featuredContent.title" class="w-full h-96 object-cover rounded-lg shadow-lg" />
                     </div>
                 </div>
             </div>
@@ -32,7 +32,7 @@
                                 <div v-for="(content, i) in visibleItems" :key="`mobile-card-${content.id}-${i}`" class="w-full px-4">
                                     <div class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
                                         <div v-if="content.image" class="mb-4">
-                                            <img :src="content.image" :alt="content.title" class="w-full h-48 object-cover rounded-lg" loading="lazy" />
+                                            <img :src="content.image_url || content.image" :alt="content.title" class="w-full h-48 object-cover rounded-lg" loading="lazy" />
                                         </div>
                                         <h4 class="text-xl font-semibold text-gray-900 mb-3">{{ content.title }}</h4>
                                         <div class="text-gray-600 line-clamp-3" v-html="content.content"></div>
@@ -65,7 +65,7 @@
                                 <div v-for="(c, i) in getVisibleCards" :key="`card-${c.id}-${i}`" class="w-1/3 px-3">
                                     <div class="card bg-white rounded-2xl overflow-hidden shadow-xl transition-transform transform hover:-translate-y-2 h-full flex flex-col text-left">
                                         <div v-if="c.image" class="-mx-6 -mt-6 overflow-hidden">
-                                            <img :src="c.image" :alt="c.title" class="card-hero w-full h-52 object-cover transform transition-transform duration-300" loading="lazy" />
+                                            <img :src="c.image_url || c.image" :alt="c.title" class="card-hero w-full h-52 object-cover transform transition-transform duration-300" loading="lazy" />
                                         </div>
 
                                         <div class="card-body px-6 py-6 flex-1 flex flex-col">
