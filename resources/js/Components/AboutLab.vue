@@ -19,10 +19,10 @@
 
             <!-- Services/Technologies Grid -->
             <div v-if="contents.length > 0" class="mb-16">
-                <div class="text-center mb-12">
-                    <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Nuestras Especialidades</h3>
-                    <p class="text-xl text-gray-600 max-w-3xl mx-auto">Ofrecemos soluciones integrales en transformación digital, combinando innovación y experiencia.</p>
-                </div>
+                    <div class="text-center mb-12">
+                        <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Nuestras Especialidades</h3>
+                        <p class="text-xl text-gray-600 max-w-3xl mx-auto">Ofrecemos soluciones integrales en transformación digital, combinando innovación y experiencia.</p>
+                    </div>
 
                 <!-- Mobile carousel (1-up on small screens) -->
                 <div class="block lg:hidden">
@@ -62,33 +62,62 @@
                 <div class="hidden lg:block">
                     <div class="relative" @mouseenter="stopAutoplay" @mouseleave="startAutoplay">
                         <div class="flex justify-center items-stretch mx-auto w-full xl:max-w-6xl">
-                                <div v-for="(c, i) in getVisibleCards" :key="`card-${c.id}-${i}`" class="w-1/3 px-3">
-                                    <div class="card bg-white rounded-2xl overflow-hidden shadow-xl transition-transform transform hover:-translate-y-2 h-full flex flex-col text-left">
-                                        <div v-if="c.image" class="-mx-6 -mt-6 overflow-hidden">
-                                            <img :src="c.image_url || c.image" :alt="c.title" class="card-hero w-full h-52 object-cover transform transition-transform duration-300" loading="lazy" />
+                            <div v-for="(c, i) in getVisibleCards" :key="`card-${c.id}-${i}`" :class="visibleCount===1 ? 'w-full px-3' : 'w-1/3 px-3'">
+                                <div v-if="visibleCount===1" class="hero-card relative rounded-2xl overflow-hidden shadow-xl h-[60vh] flex">
+                                    <!-- Left: Image with overlay showing first word of title -->
+                                    <div class="hero-image w-1/2 relative overflow-hidden">
+                                        <img :src="c.image_url || c.image" :alt="c.title" class="w-full h-full object-cover" loading="lazy" />
+                                        <div class="hero-overlay absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-transparent flex items-center">
+                                            <div class="px-8 w-full">
+                                                <h4 class="hero-overlay-title text-white font-extrabold tracking-tight leading-tight mx-auto text-center max-w-[95%]">{{ c.title }}</h4>
+                                            </div>
                                         </div>
+                                    </div>
 
-                                        <div class="card-body px-6 py-6 flex-1 flex flex-col">
-                                            <h4 class="text-2xl font-semibold text-gray-900 mb-3">{{ c.title }}</h4>
-                                            <div class="text-gray-600 text-sm mb-4 line-clamp-4" v-html="c.content"></div>
+                                    <!-- Right: Centered content -->
+                                    <div class="hero-body w-1/2 bg-white flex items-center justify-center p-12">
+                                        <div class="max-w-xl text-center">
+                                            <!-- Title shown on image overlay for hero view -->
+                                            <div class="text-gray-600 text-base mb-6" v-html="c.content"></div>
+                                            <div class="flex justify-center">
+                                                <span :class="[getTypeColor(c.type), 'badge-corporate inline-flex items-center gap-2']">
+                                                    <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                                        <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
+                                                        <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
+                                                        <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
+                                                    </svg>
+                                                    <span class="badge-text">{{ getTypeLabel(c.type) }}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                            <div class="mt-auto">
-                                                <div class="mb-4 flex justify-center">
-                                                    <div class="flex justify-center">
-                                                        <span :class="[getTypeColor(c.type), 'badge-corporate inline-flex items-center gap-2']">
-                                                        <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                                            <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
-                                                            <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
-                                                            <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
-                                                        </svg>
-                                                        <span class="badge-text">{{ getTypeLabel(c.type) }}</span>
-                                                        </span>
-                                                    </div>
+                                <div v-else class="card bg-white rounded-2xl overflow-hidden shadow-xl transition-transform transform hover:-translate-y-2 h-full flex flex-col text-left">
+                                    <!-- ...existing card markup for multi-card layout... -->
+                                    <div v-if="c.image" class="-mx-6 -mt-6 overflow-hidden">
+                                        <img :src="c.image_url || c.image" :alt="c.title" class="card-hero w-full h-52 object-cover transform transition-transform duration-300" loading="lazy" />
+                                    </div>
+                                    <div class="card-body px-6 py-6 flex-1 flex flex-col">
+                                        <h4 class="text-2xl font-semibold text-gray-900 mb-3">{{ c.title }}</h4>
+                                        <div class="text-gray-600 text-sm mb-4 line-clamp-4" v-html="c.content"></div>
+                                        <div class="mt-auto">
+                                            <div class="mb-4 flex justify-center">
+                                                <div class="flex justify-center">
+                                                    <span :class="[getTypeColor(c.type), 'badge-corporate inline-flex items-center gap-2']">
+                                                    <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                                        <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
+                                                        <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
+                                                        <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
+                                                    </svg>
+                                                    <span class="badge-text">{{ getTypeLabel(c.type) }}</span>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
                         </div>
 
                         <button class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3" @click="prev" aria-label="Anterior">‹</button>
@@ -119,17 +148,20 @@ const contents = ref([])
 const index = ref(0)
 const intervalRef = ref(null)
 const delay = 3000
-const visibleCount = ref(window.innerWidth >= 1024 ? 3 : 1)
+// Show 1 slide on very large screens (>=1280px), otherwise 3 on >=1024 or 1 on small
+const visibleCount = ref(window.innerWidth >= 1280 ? 1 : (window.innerWidth >= 1024 ? 3 : 1))
 
 const updateVisibleCount = () => {
-    visibleCount.value = window.innerWidth >= 1024 ? 3 : 1
+    if (window.innerWidth >= 1280) visibleCount.value = 1
+    else if (window.innerWidth >= 1024) visibleCount.value = 3
+    else visibleCount.value = 1
 }
 
 window.addEventListener('resize', updateVisibleCount)
 
 const getVisibleCards = computed(() => {
     const items = contents.value || []
-    const count = 3
+    const count = visibleCount.value || 1
     if (items.length === 0) return []
     if (items.length <= count) return items.slice()
 
@@ -210,6 +242,19 @@ const getTypeColor = (type) => {
     return colors[type] || 'bg-gray-100 text-gray-800'
 }
 
+// Utility: split first word from the rest of the title
+const firstWord = (title = '') => {
+    if (!title) return ''
+    const parts = title.trim().split(' ')
+    return parts[0]
+}
+
+const restTitle = (title = '') => {
+    if (!title) return ''
+    const parts = title.trim().split(' ')
+    return parts.slice(1).join(' ') || ''
+}
+
 onMounted(async () => {
     await fetchFeaturedContent()
     await fetchContents()
@@ -257,4 +302,50 @@ onMounted(async () => {
 .badge-corporate.bg-purple-100 { border-color: rgba(139, 92, 246, 0.08) }
 .badge-corporate.bg-orange-100 { border-color: rgba(249, 115, 22, 0.08) }
 .badge-corporate.bg-gray-100 { border-color: rgba(107, 114, 128, 0.06) }
+
+/* Hero layout styles for large screens */
+.hero-card { display: flex; border-radius: 1rem; overflow: hidden; }
+.hero-image { position: relative; }
+.hero-overlay { padding-left: 2rem; }
+.hero-overlay-title { text-shadow: 0 10px 30px rgba(2,6,23,0.6); }
+.hero-body { background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%); }
+
+/* Make overlay title responsive and legible over images */
+.hero-overlay-title {
+    font-size: clamp(1.75rem, 3.8vw + 1rem, 4rem); /* responsive */
+    letter-spacing: 0.02em;
+    line-height: 0.95;
+    text-wrap: balance;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0.0));
+    display: inline-block;
+    border-radius: 6px;
+}
+
+/* Slight semi-opaque mask behind title for extreme images */
+.hero-overlay::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; right: 50%; bottom: 0;
+    background: linear-gradient(90deg, rgba(0,0,0,0.45), rgba(0,0,0,0));
+    pointer-events: none;
+}
+
+/* Typography tuned for corporate look */
+.hero-overlay-title { font-family: ui-serif, Georgia, 'Times New Roman', serif; font-weight: 800; }
+.hero-body h4 { font-family: ui-sans-serif, system-ui, -apple-system, 'Helvetica Neue', Arial; font-weight: 700; }
+.hero-body .text-gray-600 { color: #475569; }
+
+/* Responsiveness tweaks */
+@media (max-width: 1440px) {
+    .hero-overlay-title { font-size: 3.25rem; }
+}
+@media (max-width: 1280px) {
+    .hero-card { flex-direction: column; height: auto; }
+    .hero-image, .hero-body { width: 100%; }
+    .hero-overlay-title { font-size: 2.25rem; padding-left: 1rem; }
+    .hero-body { padding: 2rem; }
+}
 </style>

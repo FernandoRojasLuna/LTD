@@ -98,16 +98,16 @@ function edit(c) {
 function closeForm() { showForm.value = false }
 
 async function save() {
-  // build payload; if file selected, use FormData
-  let payload = form.value
+  // build payload; prefer sending JSON when no file is selected
+  let payload
+
   if (file.value) {
+    // when there's a file, send FormData
     const fd = new FormData()
-    // only append the allowed fields to avoid sending extra metadata
     const allowed = ['title', 'slug', 'content', 'type', 'is_featured', 'is_active']
     for (const k of allowed) {
       const v = form.value[k]
       if (v === null || v === undefined) continue
-      // Laravel boolean rule accepts 1/0 or true/false, but string 'true'/'false' may fail.
       if (k === 'is_featured' || k === 'is_active') {
         fd.append(k, v ? 1 : 0)
       } else {
@@ -116,7 +116,13 @@ async function save() {
     }
     fd.append('image', file.value)
     payload = fd
+  } else {
+    // send JSON but remove `image` key to avoid Laravel's image validator failing on a string/path
+    const obj = { ...form.value }
+    if ('image' in obj) delete obj.image
+    payload = obj
   }
+
   if (form.value.id) {
     await update(form.value.id, payload)
   } else {
