@@ -15,10 +15,14 @@
       </div>
 
       <div v-else class="overflow-hidden">
-        <!-- Carrusel: contenedor con track que será transformado. Duplicamos items para bucle continuo -->
-        <div ref="viewport" class="relative w-full">
-          <div ref="track" class="flex items-stretch will-change-transform" :style="trackStyle">
-            <article v-for="(t, idx) in displayItems" :key="`tech-${t.id}-${idx}`" :style="{ width: itemWidthPct + '%' }" class="flex-shrink-0 p-4 bg-white rounded-lg shadow-sm flex flex-col items-center">
+        <!-- Carrusel continuo tipo "culebra": duplicamos la secuencia y animamos el track con keyframes -->
+        <div ref="viewport" class="relative w-full overflow-hidden">
+          <div
+            ref="track"
+            class="tech-track flex items-stretch will-change-transform"
+            :style="{ '--distance': animationDistancePct + '%', '--duration': animationDuration + 's' }"
+          >
+            <article v-for="(t, idx) in continuousDisplay" :key="`tech-${t.id}-${idx}`" :style="{ width: itemWidthPct + '%' }" class="flex-shrink-0 p-4 bg-white rounded-lg shadow-sm flex flex-col items-center">
               <div class="w-16 h-16 flex items-center justify-center mb-3">
                 <img v-if="isImageUrl(t.icon)" :src="t.icon" :alt="t.name" class="w-12 h-12 object-contain" />
                 <i v-else-if="t.icon" :class="t.icon + ' text-2xl'" aria-hidden="true"></i>
@@ -46,31 +50,34 @@ const track = ref(null)
 // Carousel config
 const VISIBLE = 7 // always show 7 items
 const itemWidthPct = 100 / VISIBLE
-const position = ref(0) // translateX in %
-const animating = ref(false)
-const speedMs = 400 // ms per shift
-const pauseMs = 1200 // pause between shifts
-let timer = null
+
+// animationDuration computed below (seconds)
 
 const isImageUrl = (url) => url && (url.startsWith('http') || url.startsWith('/storage/') || url.startsWith('data:'))
 const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) : ''
 
-// Build displayItems by duplicating array to allow seamless loop
-const displayItems = computed(() => {
+// Build continuousDisplay by repeating the base sequence multiple times so CSS animation never shows a gap
+const continuousDisplay = computed(() => {
   const base = technologies.value || []
   if (base.length === 0) return []
-  // Ensure enough items to slide; repeat until length > VISIBLE + base.length
-  const minReps = Math.ceil((VISIBLE + base.length) / base.length)
-  const dup = Array.from({ length: minReps }).flatMap(() => base.map((b) => ({ ...b })))
-  return dup
+  // Duplicate twice (base + base) to allow smooth loop
+  return Array.from({ length: 2 }).flatMap(() => base.map(b => ({ ...b })))
 })
 
-const trackStyle = computed(() => {
-  return {
-    transition: animating.value ? `transform ${speedMs}ms ease` : 'none',
-    transform: `translateX(${position.value}%)`
-  }
+// animationDistancePct: how much percent the track must translate to move one base sequence
+const animationDistancePct = computed(() => {
+  const baseCount = Math.max(technologies.value.length, 1)
+  return baseCount * itemWidthPct
 })
+
+// animationDuration: seconds for a full base sequence translation (calm movement)
+const animationDuration = computed(() => {
+  const baseCount = Math.max(technologies.value.length, 1)
+  return Math.max(10, Math.round((baseCount / VISIBLE) * 14))
+})
+
+// trackStyle replaced by CSS animation; keep placeholder for compatibility
+const trackStyle = computed(() => ({ }))
 
 const normalizeIcons = (arr) => arr.map(t => {
   if (t.icon && !t.icon.startsWith('http') && !t.icon.startsWith('data:')) {
@@ -88,7 +95,7 @@ const load = async () => {
     position.value = 0
     animating.value = false
     await nextTick()
-    startAutoplay()
+  // continuous animation handled by CSS; no JS autoplay needed
   } catch (e) {
     console.error('load technologies', e)
   } finally {
@@ -96,46 +103,34 @@ const load = async () => {
   }
 }
 
-const shiftOnce = async () => {
-  if (animating.value || displayItems.value.length === 0) return
-  animating.value = true
-  // move left by one item width percentage
-  position.value = position.value - itemWidthPct
-  // wait for animation end
-  await new Promise(r => setTimeout(r, speedMs))
-  const totalBase = technologies.value.length
-  if (totalBase > 0) {
-    const movedItems = Math.round(Math.abs(position.value) / itemWidthPct)
-    if (movedItems >= totalBase) {
-      // reset position forward by totalBase * itemWidthPct to avoid accumulated drift
-      // temporarily disable transition
-      animating.value = false
-      position.value = position.value + (totalBase * itemWidthPct)
-      await nextTick()
-    }
-  }
-  animating.value = false
-}
-
-const startAutoplay = () => {
-  stopAutoplay()
-  // use interval to shift one at a time
-  timer = setInterval(() => {
-    shiftOnce()
-  }, pauseMs + speedMs)
-}
-
-const stopAutoplay = () => {
-  if (timer) {
-    clearInterval(timer)
-    timer = null
-  }
-}
+// continuous animation - minimal JS: allow pause on hover
+const startAutoplay = () => { /* noop, CSS handles it */ }
+const stopAutoplay = () => { /* noop */ }
 
 onMounted(() => load())
 onBeforeUnmount(() => stopAutoplay())
+
+// expose for template if needed
+// ...existing code...
 </script>
 
 <style scoped>
 .w-16-custom { width: 4rem; height: 4rem }
+
+/* Track animation: desplazamiento continuo hacia la izquierda. La duración se controla por la variable --duration (s). */
+.tech-track {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  /* animation will be applied to the track element */
+  animation-name: tech-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: var(--duration, 12s);
+}
+
+@keyframes tech-scroll {
+  from { transform: translateX(0%); }
+  to { transform: translateX(calc(-1 * var(--distance, 50%))); }
+}
 </style>
