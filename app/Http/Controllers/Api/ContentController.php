@@ -28,6 +28,7 @@ class ContentController extends Controller
         $rules = [
             'title' => 'required|string|max:255',
             'content' => 'required|string',
+            'subtitle' => 'nullable|string|max:255',
             'type' => 'string|in:general,service,technology,area',
             'image' => 'nullable|file|mimes:jpg,jpeg,png,gif,svg,webp|max:2048',
             'is_featured' => 'boolean',
@@ -92,6 +93,7 @@ class ContentController extends Controller
         $rules = [
             'title' => 'required|string|max:255',
             'content' => 'required|string',
+            'subtitle' => 'nullable|string|max:255',
             'type' => 'string|in:general,service,technology,area',
             // use `image` rule which accepts common image types and is more robust
             'image' => 'nullable|image|max:2048',

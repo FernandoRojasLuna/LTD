@@ -37,7 +37,7 @@
         <h3 class="text-lg font-semibold mb-3">{{ form.id ? 'Editar' : 'Nuevo' }} contenido</h3>
         <div class="grid grid-cols-1 gap-3">
           <input v-model="form.title" placeholder="Título" class="border p-2 rounded" />
-          <input v-model="form.slug" placeholder="Slug" class="border p-2 rounded" />
+          <input v-model="form.subtitle" placeholder="Subtítulo" class="border p-2 rounded" />
           <select v-model="form.type" class="border p-2 rounded">
             <option value="general">General</option>
             <option value="service">Service</option>
@@ -75,14 +75,14 @@ import useContents from '@/composables/useContents'
 const { list, create, update, remove } = useContents()
 const contents = ref([])
 const showForm = ref(false)
-const form = ref({ id: null, title: '', slug: '', content: '', type: 'service', image: '', is_featured: false, is_active: true })
+const form = ref({ id: null, title: '', subtitle: '', content: '', type: 'service', image: '', is_featured: false, is_active: true })
 
 async function load() {
   contents.value = await list()
 }
 
 function openForm() {
-  form.value = { id: null, title: '', slug: '', content: '', type: 'service', image: '', is_featured: false, is_active: true }
+  form.value = { id: null, title: '', subtitle: '', content: '', type: 'service', image: '', is_featured: false, is_active: true }
   preview.value = null
   file.value = null
   showForm.value = true
@@ -104,7 +104,7 @@ async function save() {
   if (file.value) {
     // when there's a file, send FormData
     const fd = new FormData()
-    const allowed = ['title', 'slug', 'content', 'type', 'is_featured', 'is_active']
+    const allowed = ['title', 'subtitle', 'content', 'type', 'is_featured', 'is_active']
     for (const k of allowed) {
       const v = form.value[k]
       if (v === null || v === undefined) continue

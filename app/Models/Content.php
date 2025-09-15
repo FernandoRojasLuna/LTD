@@ -9,7 +9,7 @@ class Content extends Model
 {
     protected $fillable = [
         'title',
-        'slug',
+    'subtitle',
         'content',
         'type',
         'image',
@@ -42,16 +42,11 @@ class Content extends Model
         return $query->where('type', $type);
     }
 
-    // Generar slug automáticamente
+    // No automatic slug generation: subtitle is a separate, user-provided field
     protected static function boot()
     {
         parent::boot();
-        
-        static::creating(function ($content) {
-            if (empty($content->slug)) {
-                $content->slug = Str::slug($content->title);
-            }
-        });
+        // keep default boot behavior; subtitle is provided manually by user
     }
 
     // Accessor para URL pública de la imagen

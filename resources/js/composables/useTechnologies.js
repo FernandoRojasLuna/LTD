@@ -118,7 +118,8 @@ export function useTechnologies() {
         try {
             loading.value = true
             error.value = null
-            const response = await axios.get('/api/technologies/public')
+            // public endpoint is exposed under /api/public/technologies
+            const response = await axios.get('/api/public/technologies')
             return response.data
         } catch (err) {
             error.value = err.response?.data?.message || 'Error al cargar las tecnologías activas'

@@ -12,7 +12,7 @@
                         <div class="prose prose-lg max-w-none text-gray-700" v-html="featuredContent.content"></div>
                     </div>
                     <div class="order-1 lg:order-2">
-                        <img :src="featuredContent.image_url || featuredContent.image" :alt="featuredContent.title" class="w-full h-96 object-cover rounded-lg shadow-lg" />
+                        <img :src="featuredContent.image_url || featuredContent.image" :alt="featuredContent.title" class="w-full h-96 object-cover rounded-lg shadow-lg hero-standout" />
                     </div>
                 </div>
             </div>
@@ -28,33 +28,35 @@
                 <div class="block lg:hidden">
                     <div class="relative" @mouseenter="stopAutoplay" @mouseleave="startAutoplay">
                         <div class="overflow-hidden">
-                            <div class="flex transition-transform duration-500 ease-in-out">
-                                <div v-for="(content, i) in visibleItems" :key="`mobile-card-${content.id}-${i}`" class="w-full px-4">
-                                    <div class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
-                                        <div v-if="content.image" class="mb-4">
-                                            <img :src="content.image_url || content.image" :alt="content.title" class="w-full h-48 object-cover rounded-lg" loading="lazy" />
-                                        </div>
-                                        <h4 class="text-xl font-semibold text-gray-900 mb-3">{{ content.title }}</h4>
-                                        <div class="text-gray-600 line-clamp-3" v-html="content.content"></div>
-                                        <div class="mt-4 flex justify-center">
-                                            <div class="flex justify-center">
-                                                <span :class="[getTypeColor(content.type), 'badge-corporate inline-flex items-center gap-2']">
-                                                    <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                                        <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
-                                                        <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
-                                                        <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
-                                                    </svg>
-                                                    <span class="badge-text">{{ getTypeLabel(content.type) }}</span>
-                                                </span>
+                                    <div class="transition-stack relative">
+                                        <transition :name="'fade-3d-' + direction" mode="out-in">
+                                            <div v-if="visibleItems.length" :key="visibleItems[0].id" class="w-full px-4 transition-slide">
+                                            <div class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                                                <div v-if="visibleItems[0].image" class="mb-4">
+                                                    <img :src="visibleItems[0].image_url || visibleItems[0].image" :alt="visibleItems[0].title" class="w-full h-48 object-cover rounded-lg" loading="lazy" />
+                                                </div>
+                                                <h4 class="text-xl font-semibold text-gray-900 mb-3">{{ visibleItems[0].title }}</h4>
+                                                <div class="text-gray-600 line-clamp-3" v-html="visibleItems[0].content"></div>
+                                                <div class="mt-4 flex justify-center">
+                                                    <div class="flex justify-center">
+                                                        <span :class="[getTypeColor(visibleItems[0].type), 'badge-corporate inline-flex items-center gap-2']">
+                                                            <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                                                <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
+                                                                <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
+                                                                <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
+                                                            </svg>
+                                                            <span class="badge-text">{{ getTypeLabel(visibleItems[0].type) }}</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
+                                        </transition>
                                     </div>
-                                </div>
-                            </div>
                         </div>
 
-                        <button class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3" @click="prev" aria-label="Anterior">‹</button>
-                        <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3" @click="next" aria-label="Siguiente">›</button>
+                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="prev" aria-label="Anterior">‹</button>
+                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="next" aria-label="Siguiente">›</button>
                     </div>
                 </div>
 
@@ -62,69 +64,68 @@
                 <div class="hidden lg:block">
                     <div class="relative" @mouseenter="stopAutoplay" @mouseleave="startAutoplay">
                         <div class="flex justify-center items-stretch mx-auto w-full xl:max-w-6xl">
-                            <div v-for="(c, i) in getVisibleCards" :key="`card-${c.id}-${i}`" :class="visibleCount===1 ? 'w-full px-3' : 'w-1/3 px-3'">
-                                <div v-if="visibleCount===1" class="hero-card relative rounded-2xl overflow-hidden shadow-xl h-[60vh] flex">
-                                    <!-- Left: Image with overlay showing first word of title -->
-                                    <div class="hero-image w-1/2 relative overflow-hidden">
-                                        <img :src="c.image_url || c.image" :alt="c.title" class="w-full h-full object-cover" loading="lazy" />
-                                        <div class="hero-overlay absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-transparent flex items-center">
-                                            <div class="px-8 w-full">
-                                                <h4 class="hero-overlay-title text-white font-extrabold tracking-tight leading-tight mx-auto text-center max-w-[95%]">{{ c.title }}</h4>
+                            <div class="transition-stack w-full relative">
+                                <transition :name="'fade-3d-' + direction" mode="out-in">
+                                    <div v-if="visibleCount===1" :key="currentCard?.id || index" class="w-full px-3 transition-slide">
+                                        <div class="hero-card relative rounded-2xl overflow-hidden shadow-xl h-[60vh] flex">
+                                        <!-- Left: Image with overlay showing first word of title -->
+                                        <div class="hero-image w-1/2 relative overflow-hidden">
+                                            <img :src="currentCard?.image_url || currentCard?.image" :alt="currentCard?.title" class="w-full h-full object-cover" loading="lazy" style="filter:brightness(0.58) contrast(0.98); object-position:center;" />
+                                            <div class="hero-overlay absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-transparent flex items-center">
+                                                <div class="px-8 w-full">
+                                                    <h4 class="hero-overlay-title text-white font-extrabold tracking-tight leading-tight mx-auto text-center max-w-[95%]">{{ currentCard?.title }}</h4>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <!-- Right: Centered content -->
-                                    <div class="hero-body w-1/2 bg-white flex items-center justify-center p-12">
-                                        <div class="max-w-xl text-center">
-                                            <!-- Title shown on image overlay for hero view -->
-                                            <div class="text-gray-600 text-base mb-6" v-html="c.content"></div>
-                                            <div class="flex justify-center">
-                                                <span :class="[getTypeColor(c.type), 'badge-corporate inline-flex items-center gap-2']">
-                                                    <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                                        <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
-                                                        <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
-                                                        <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
-                                                    </svg>
-                                                    <span class="badge-text">{{ getTypeLabel(c.type) }}</span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div v-else class="card bg-white rounded-2xl overflow-hidden shadow-xl transition-transform transform hover:-translate-y-2 h-full flex flex-col text-left">
-                                    <!-- ...existing card markup for multi-card layout... -->
-                                    <div v-if="c.image" class="-mx-6 -mt-6 overflow-hidden">
-                                        <img :src="c.image_url || c.image" :alt="c.title" class="card-hero w-full h-52 object-cover transform transition-transform duration-300" loading="lazy" />
-                                    </div>
-                                    <div class="card-body px-6 py-6 flex-1 flex flex-col">
-                                        <h4 class="text-2xl font-semibold text-gray-900 mb-3">{{ c.title }}</h4>
-                                        <div class="text-gray-600 text-sm mb-4 line-clamp-4" v-html="c.content"></div>
-                                        <div class="mt-auto">
-                                            <div class="mb-4 flex justify-center">
+                                        <!-- Right: Centered content -->
+                                        <div class="hero-body w-1/2 bg-white flex items-center justify-center p-12">
+                                            <div class="max-w-xl text-center">
+                                                <!-- Subtitle (only on large screens) -->
+                                                <p class="subtitle-corporate hidden lg:block mb-6 text-center">{{ currentCard?.subtitle }}</p>
+                                                <!-- Content -->
+                                                <div class="text-gray-600 text-base mb-6" v-html="currentCard?.content"></div>
                                                 <div class="flex justify-center">
-                                                    <span :class="[getTypeColor(c.type), 'badge-corporate inline-flex items-center gap-2']">
-                                                    <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                                        <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
-                                                        <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
-                                                        <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
-                                                    </svg>
-                                                    <span class="badge-text">{{ getTypeLabel(c.type) }}</span>
+                                                    <span :class="[getTypeColor(currentCard?.type), 'badge-corporate inline-flex items-center gap-2']">
+                                                        <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                                            <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
+                                                            <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
+                                                            <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
+                                                        </svg>
+                                                        <span class="badge-text">{{ getTypeLabel(currentCard?.type) }}</span>
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                </transition>
+                            </div>
+                            <div v-if="visibleCount !== 1" class="flex w-full">
+                                <div v-for="(c, i) in desktopItems" :key="`card-${c.id}-${i}`" :class="'w-1/3 px-3'">
+                                    <div class="card bg-white rounded-2xl overflow-hidden shadow-xl transition-transform transform hover:-translate-y-2 h-full flex flex-col text-left">
+                                        <!-- existing multi-card markup -->
+                                        <div v-if="c.image" class="-mx-6 -mt-6 overflow-hidden">
+                                            <img :src="c.image_url || c.image" :alt="c.title" class="card-hero w-full h-52 object-cover transform transition-transform duration-300" loading="lazy" />
+                                        </div>
+                                        <div class="card-body px-6 py-6 flex-1 flex flex-col">
+                                            <h4 class="text-2xl font-semibold text-gray-900 mb-3">{{ c.title }}</h4>
+                                            <p class="hidden lg:block text-sm text-indigo-600 uppercase tracking-wide font-semibold mb-3">{{ c.subtitle }}</p>
+                                            <div class="text-gray-600 text-sm mb-4 line-clamp-4" v-html="c.content"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <button class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3" @click="prev" aria-label="Anterior">‹</button>
-                        <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3" @click="next" aria-label="Siguiente">›</button>
+                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="prev" aria-label="Anterior">‹</button>
+                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="next" aria-label="Siguiente">›</button>
                     </div>
                 </div>
             </div>
+
+            <!-- Technologies showcase -->
+            <TechnologiesShowcase />
 
             <!-- Call to Action -->
             <div class="text-center">
@@ -139,22 +140,40 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount, watch } from 'vue'
 import axios from 'axios'
+import TechnologiesShowcase from '@/Components/Admin/TechnologiesShowcase.vue'
 
 const featuredContent = ref(null)
 const contents = ref([])
 
 const index = ref(0)
 const intervalRef = ref(null)
-const delay = 3000
-// Show 1 slide on very large screens (>=1280px), otherwise 3 on >=1024 or 1 on small
-const visibleCount = ref(window.innerWidth >= 1280 ? 1 : (window.innerWidth >= 1024 ? 3 : 1))
+const smallDelayMs = 3000
+const largeDelayMs = 6000
+const direction = ref('next')
+const canNavigate = ref(true)
+const navigationLockMs = 6000
+
+const autoplayDelay = computed(() => visibleCount.value === 1 ? largeDelayMs : smallDelayMs)
+// visibleCount: 1 for very large screens (>=1280), 3 for large (>=1024), 1 for small
+const visibleCount = ref(1)
 
 const updateVisibleCount = () => {
-    if (window.innerWidth >= 1280) visibleCount.value = 1
-    else if (window.innerWidth >= 1024) visibleCount.value = 3
-    else visibleCount.value = 1
+    try {
+        if (window.matchMedia('(min-width: 1280px)').matches) {
+            visibleCount.value = 1
+            return
+        }
+        if (window.matchMedia('(min-width: 1024px)').matches) {
+            visibleCount.value = 3
+            return
+        }
+        visibleCount.value = 1
+    } catch (e) {
+        // fallback
+        visibleCount.value = window.innerWidth >= 1280 ? 1 : (window.innerWidth >= 1024 ? 3 : 1)
+    }
 }
 
 window.addEventListener('resize', updateVisibleCount)
@@ -171,6 +190,13 @@ const getVisibleCards = computed(() => {
         visible.push(items[idx])
     }
     return visible
+})
+
+// For desktop (non-hero) show all available items (excluding featured one)
+const desktopItems = computed(() => {
+    const items = contents.value || []
+    // exclude featuredContent from the list to avoid duplicate
+    return items.filter(c => !(featuredContent.value && c.id === featuredContent.value.id))
 })
 
 const visibleItems = computed(() => {
@@ -190,9 +216,11 @@ const visibleItems = computed(() => {
 const startAutoplay = () => {
     stopAutoplay()
     intervalRef.value = setInterval(() => {
-        if (!contents.value || contents.value.length <= 1) return
-        index.value = (index.value + 1) % contents.value.length
-    }, delay)
+    if (!contents.value || contents.value.length <= 1) return
+    // block navigation briefly when autoplay advances
+    lockNavigation()
+    index.value = (index.value + 1) % contents.value.length
+    }, autoplayDelay.value)
 }
 
 const stopAutoplay = () => {
@@ -203,13 +231,24 @@ const stopAutoplay = () => {
 }
 
 const next = () => {
+    if (!canNavigate.value) return
     if (!contents.value || contents.value.length <= 1) return
+    direction.value = 'next'
     index.value = (index.value + 1) % contents.value.length
+    lockNavigation()
 }
 
 const prev = () => {
+    if (!canNavigate.value) return
     if (!contents.value || contents.value.length <= 1) return
+    direction.value = 'prev'
     index.value = (index.value - 1 + contents.value.length) % contents.value.length
+    lockNavigation()
+}
+
+const lockNavigation = () => {
+    canNavigate.value = false
+    setTimeout(() => { canNavigate.value = true }, navigationLockMs)
 }
 
 onBeforeUnmount(() => {
@@ -241,6 +280,17 @@ const getTypeColor = (type) => {
     const colors = { general: 'bg-blue-100 text-blue-800', service: 'bg-green-100 text-green-800', technology: 'bg-purple-100 text-purple-800', area: 'bg-orange-100 text-orange-800' }
     return colors[type] || 'bg-gray-100 text-gray-800'
 }
+
+const currentCard = computed(() => {
+    const cards = getVisibleCards.value
+    if (!cards || cards.length === 0) return null
+    return cards[0]
+})
+
+// keep index in range when contents change
+watch(() => contents.value.length, (len) => {
+    if (index.value >= len) index.value = 0
+})
 
 // Utility: split first word from the rest of the title
 const firstWord = (title = '') => {
@@ -310,6 +360,22 @@ onMounted(async () => {
 .hero-overlay-title { text-shadow: 0 10px 30px rgba(2,6,23,0.6); }
 .hero-body { background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%); }
 
+/* Subtitle corporate style */
+.subtitle-corporate {
+    color: #6b21a8; /* indigo-800 variant */
+    font-size: 0.9rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+/* Make the featured image stand out with subtle shadow and rounded corners */
+.hero-standout {
+    border-radius: 1rem;
+    box-shadow: 0 30px 60px rgba(2,6,23,0.12), 0 6px 16px rgba(2,6,23,0.06);
+    object-position: center center;
+}
+
 /* Make overlay title responsive and legible over images */
 .hero-overlay-title {
     font-size: clamp(1.75rem, 3.8vw + 1rem, 4rem); /* responsive */
@@ -347,5 +413,83 @@ onMounted(async () => {
     .hero-image, .hero-body { width: 100%; }
     .hero-overlay-title { font-size: 2.25rem; padding-left: 1rem; }
     .hero-body { padding: 2rem; }
+}
+
+/* Card transition animations */
+.card-enter-from, .card-leave-to {
+    opacity: 0;
+    transform: translateX(20px) rotateY(6deg) scale(0.98);
+}
+.card-enter-to, .card-leave-from {
+    opacity: 1;
+    transform: translateX(0) rotateY(0) scale(1);
+}
+.card-enter-active, .card-leave-active {
+    transition: all 650ms cubic-bezier(.2,.9,.2,1);
+}
+.anim-next .card-enter-from { transform: translateX(30px) rotateY(8deg) scale(0.98); }
+.anim-prev .card-enter-from { transform: translateX(-30px) rotateY(-8deg) scale(0.98); }
+.anim-next .card-leave-to { transform: translateX(-30px) rotateY(-6deg) scale(0.98); }
+.anim-prev .card-leave-to { transform: translateX(30px) rotateY(6deg) scale(0.98); }
+
+/* Polished next/prev transitions for single-card hero and mobile */
+.card-next-enter-from { opacity: 0; transform: translateX(40px) perspective(1000px) rotateY(8deg) scale(0.98); }
+.card-next-enter-to { opacity: 1; transform: translateX(0) perspective(1000px) rotateY(0) scale(1); }
+.card-next-leave-from { opacity: 1; transform: translateX(0) perspective(1000px) rotateY(0) scale(1); }
+.card-next-leave-to { opacity: 0; transform: translateX(-40px) perspective(1000px) rotateY(-6deg) scale(0.98); }
+
+.card-prev-enter-from { opacity: 0; transform: translateX(-40px) perspective(1000px) rotateY(-8deg) scale(0.98); }
+.card-prev-enter-to { opacity: 1; transform: translateX(0) perspective(1000px) rotateY(0) scale(1); }
+.card-prev-leave-from { opacity: 1; transform: translateX(0) perspective(1000px) rotateY(0) scale(1); }
+.card-prev-leave-to { opacity: 0; transform: translateX(40px) perspective(1000px) rotateY(6deg) scale(0.98); }
+
+.card-next-enter-active, .card-next-leave-active, .card-prev-enter-active, .card-prev-leave-active {
+    transition: transform 680ms cubic-bezier(.2,.9,.2,1), opacity 480ms cubic-bezier(.2,.9,.2,1);
+}
+
+/* New polished cross-fade + 3D blur transitions */
+.transition-stack { position: relative; }
+.transition-stack .transition-slide { position: relative; }
+
+.fade-3d-next-enter-from,
+.fade-3d-prev-enter-from {
+    opacity: 0;
+    transform: translateX(var(--x, 30px)) perspective(1000px) rotateY(var(--ry, 6deg)) scale(0.99);
+    filter: blur(6px) saturate(0.9);
+}
+.fade-3d-next-enter-to,
+.fade-3d-prev-enter-to {
+    opacity: 1;
+    transform: translateX(0) perspective(1000px) rotateY(0) scale(1);
+    filter: blur(0) saturate(1);
+}
+.fade-3d-next-leave-from,
+.fade-3d-prev-leave-from {
+    opacity: 1;
+    transform: translateX(0) perspective(1000px) rotateY(0) scale(1);
+}
+.fade-3d-next-leave-to {
+    opacity: 0;
+    transform: translateX(-40px) perspective(1000px) rotateY(-8deg) scale(0.98);
+    filter: blur(6px) saturate(0.9);
+}
+.fade-3d-prev-leave-to {
+    opacity: 0;
+    transform: translateX(40px) perspective(1000px) rotateY(8deg) scale(0.98);
+    filter: blur(6px) saturate(0.9);
+}
+.fade-3d-next-enter-active, .fade-3d-next-leave-active,
+.fade-3d-prev-enter-active, .fade-3d-prev-leave-active {
+    transition: transform 680ms cubic-bezier(.2,.9,.2,1), opacity 420ms cubic-bezier(.2,.9,.2,1), filter 420ms ease;
+}
+
+/* Small overlay cross-fade to hide abrupt image edges */
+.transition-stack::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.02) 50%, rgba(0,0,0,0.02) 100%);
+    mix-blend-mode: normal;
 }
 </style>
