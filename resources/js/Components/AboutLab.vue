@@ -72,8 +72,8 @@
                         </div>
 
                         <!-- mobile navigation elements for Swiper to bind -->
-                        <button ref="mobilePrevBtn" aria-hidden class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 pointer-events-auto z-50">‹</button>
-                        <button ref="mobileNextBtn" aria-hidden class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 pointer-events-auto z-50">›</button>
+                        <button ref="mobilePrevBtn" aria-hidden class="mobile-nav-btn absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 pointer-events-auto z-50">‹</button>
+                        <button ref="mobileNextBtn" aria-hidden class="mobile-nav-btn absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 pointer-events-auto z-50">›</button>
                     </div>
                 </div>
 
@@ -762,6 +762,30 @@ onMounted(async () => {
     .hero-image, .hero-body { width: 100%; }
     .hero-overlay-title { font-size: 2.25rem; padding-left: 1rem; }
     .hero-body { padding: 2rem; }
+}
+
+/* Mobile navigation button polish: remove duplicate blue/focus ring and ensure clean look */
+@media (max-width: 1099px) {
+    .mobile-nav-btn {
+        /* neutral background and subtle shadow */
+        background: #ffffff !important;
+        box-shadow: 0 6px 18px rgba(2,6,23,0.08) !important;
+        color: #374151 !important; /* text-gray-700 */
+        border: 1px solid rgba(15,23,42,0.06);
+        /* ensure button floats above any swiper internal controls */
+        z-index: 60 !important;
+        /* remove any default browser focus ring that appears as blue background */
+        -webkit-tap-highlight-color: transparent;
+    }
+    /* remove inner duplicate backgrounds or pseudo-elements from Swiper that may show below */
+    .mobile-nav-btn::before, .mobile-nav-btn::after { display: none !important; }
+    /* prevent blue focus halo but keep accessible outline for keyboard users */
+    .mobile-nav-btn:focus {
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important; /* subtle indigo ring */
+    }
+    /* slightly increase hit area without visually changing size */
+    .mobile-nav-btn { padding: 0.6rem !important; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 }
 
 /* Card transition animations */
