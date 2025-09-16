@@ -144,12 +144,58 @@
             <!-- Technologies showcase -->
             <TechnologiesShowcase />
 
-            <!-- Call to Action -->
+            <!-- Call to Action (corporate redesign) -->
             <div class="text-center">
-                <div class="bg-indigo-600 rounded-lg p-8 text-white">
-                    <h3 class="text-2xl font-bold mb-4">¿Listo para transformar tu negocio?</h3>
-                    <p class="text-xl mb-6">Contáctanos y descubre cómo podemos ayudarte a alcanzar tus objetivos digitales.</p>
-                    <a href="#contact" class="inline-block bg-white text-indigo-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition duration-300 transform hover:scale-105">Contáctanos Ahora</a>
+                <div class="cta-corporate mx-auto rounded-2xl p-12 text-white shadow-2xl">
+                    <div class="cta-inner max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div class="text-left lg:pr-8">
+                            <h3 class="cta-title text-3xl md:text-4xl font-extrabold leading-tight mb-4">¿Listo para transformar tu negocio?</h3>
+                            <p class="cta-sub text-lg md:text-xl text-indigo-50/90 max-w-2xl">Colaboramos con empresas y gobiernos para acelerar la transformación digital mediante soluciones estratégicas, seguras y medibles.</p>
+                        </div>
+                        <div class="flex justify-center lg:justify-end">
+                            <a href="#contact" class="cta-button inline-flex items-center gap-4 bg-white text-indigo-700 font-semibold py-4 px-7 rounded-2xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                    <path d="M3 12h14" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M13 5l7 7-7 7" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Contáctanos ahora
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Trust logos / proof (carousel: large, circular, full-color logos) -->
+                    <div class="trust-row mt-6 md:mt-10 border-t border-white/10 pt-4 md:pt-8">
+                        <div class="flex items-center justify-center gap-3 md:gap-6 mb-3 md:mb-6">
+                            <span class="trust-text text-sm text-indigo-100/70">Confiado por</span>
+                        </div>
+
+                        <div class="trust-logos w-full max-w-3xl mx-auto flex justify-center">
+                                <template v-if="showCarousel">
+                                    <Swiper
+                                        :modules="[Navigation, Autoplay]"
+                                        :slidesPerView="1"
+                                        :loop="true"
+                                        :autoplay="{ delay: 4200, disableOnInteraction: false }"
+                                        class="trust-swiper w-full"
+                                    >
+                                        <SwiperSlide v-for="(logo, i) in trustLogos" :key="`logo-${i}-${logo}`" class="trust-item flex items-center justify-center">
+                                            <div class="trust-logo-circle">
+                                                <img :src="getStorageUrl(logo)" @error="onTrustImgError($event)" :alt="logo" class="trust-logo-img" loading="lazy" />
+                                            </div>
+                                        </SwiperSlide>
+                                    </Swiper>
+                                </template>
+                                <template v-else>
+                                    <div class="trust-grid grid grid-cols-3 gap-8 justify-center items-center w-full md:max-w-4xl mx-auto">
+                                        <div v-for="(logo, i) in trustLogos" :key="`g-${i}-${logo}`" class="trust-item flex items-center justify-center">
+                                            <div class="trust-logo-circle">
+                                                <img :src="getStorageUrl(logo)" @error="onTrustImgError($event)" :alt="logo" class="trust-logo-img" loading="lazy" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -231,6 +277,21 @@ const onSwiper = (swiperInstance) => {
             }
         } catch (e) { /* ignore */ }
     })
+}
+
+// Helpers for trust logos
+const getStorageUrl = (filename) => {
+    // public/storage is web-accessible in this project
+    return `/storage/${filename}`
+}
+
+const onTrustImgError = (ev) => {
+    try {
+        const el = ev && ev.target
+        if (!el) return
+        // inline SVG placeholder as fallback
+        el.src = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="36"><rect width="120" height="36" rx="6" fill="#ffffff22"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff88" font-family="Arial, Helvetica, sans-serif" font-size="10">Logo</text></svg>')
+    } catch (e) { /* ignore */ }
 }
 
 let mqlDesktop = null
@@ -659,6 +720,17 @@ onMounted(async () => {
     await fetchContents()
     startAutoplay()
 })
+
+// Trust logos: filenames stored in public/storage
+const trustLogos = ref([
+    'logoGore.jpg',
+    'muniLima.jpg',
+    'muni.jpg'
+])
+
+const showCarousel = computed(() => {
+    return (trustLogos.value || []).length > 3
+})
 </script>
 
 
@@ -864,5 +936,83 @@ onMounted(async () => {
     pointer-events: none;
     background: linear-gradient(180deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.02) 50%, rgba(0,0,0,0.02) 100%);
     mix-blend-mode: normal;
+}
+
+/* CTA corporate styles */
+.cta-corporate {
+    background: linear-gradient(90deg, rgba(79,70,229,0.96) 0%, rgba(99,102,241,0.95) 100%);
+    border-radius: 1rem;
+    padding: 2.5rem;
+}
+.cta-corporate .cta-title { color: #ffffff; }
+.cta-corporate .cta-sub { color: rgba(255,255,255,0.92); }
+.cta-button {
+    min-width: 180px;
+    border-radius: 0.75rem;
+}
+.cta-button svg { opacity: 0.95 }
+.trust-row { opacity: 0.95 }
+.trust-logo { opacity: 1; filter: none; }
+
+.trust-logos { justify-content: center; }
+.trust-item { display: flex; align-items: center; justify-content: center; padding: 12px; }
+
+/* hide old card wrappers if present; we use a circular logo container instead */
+.trust-card { display: none !important; }
+
+/* Circular logo container */
+.trust-logo-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: transparent;
+    padding: 0.5rem;
+}
+
+/* Logo image: circular, full color, responsive */
+.trust-logo-img {
+    display: block;
+    border-radius: 9999px; /* make image itself circular where possible */
+    object-fit: contain;
+    width: auto;
+    /* scale fluidly but cap size */
+    max-height: clamp(4.25rem, 9vw + 0.5rem, 10rem); /* approx 68px - 160px */
+    filter: none; /* ensure full color */
+    transition: transform 260ms ease, box-shadow 260ms ease;
+}
+.trust-logo-img:hover { transform: translateY(-4px); box-shadow: 0 20px 56px rgba(2,6,23,0.14); }
+
+@media (max-width: 1280px) {
+    .trust-logo-img { max-height: 8rem; }
+}
+
+@media (max-width: 1024px) {
+    .trust-logo-img { max-height: 7rem; }
+}
+
+@media (max-width: 640px) {
+    .trust-logo-img { max-height: 5.5rem; }
+}
+
+@media (max-width: 420px) {
+    .trust-logo-img { max-height: 4.75rem; }
+}
+
+@media (max-width: 768px) {
+    .cta-corporate { padding: 1.5rem; }
+    .cta-inner { grid-template-columns: 1fr; }
+    .cta-button { min-width: 160px; }
+    .cta-title { text-align: center; }
+    .cta-sub { text-align: center; }
+    .trust-row { justify-content: center }
+}
+
+/* Reduce vertical spacing for trust logos on small screens */
+@media (max-width: 640px) {
+    .trust-item { padding: 6px; }
+    .trust-logo-circle { padding: 0.25rem; }
+    .trust-row { margin-top: 0.5rem; }
+    .trust-logos { max-width: 90%; }
 }
 </style>
