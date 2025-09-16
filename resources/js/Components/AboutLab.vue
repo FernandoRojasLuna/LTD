@@ -33,7 +33,8 @@
                                 :modules="[Navigation, Pagination, Autoplay]"
                                 :spaceBetween="20"
                                     :breakpoints="swiperBreakpoints"
-                        :autoplay="{ delay: autoplayDelay.value, disableOnInteraction: false }"
+                                :autoplay="{ delay: autoplayDelay.value, disableOnInteraction: false }"
+                                :speed="swiperSpeed"
                             :watchOverflow="true"
                             :loop="true"
                                     :slidesPerGroup="1"
@@ -70,8 +71,9 @@
                             </Swiper>
                         </div>
 
-                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="prev" aria-label="Anterior">‹</button>
-                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="next" aria-label="Siguiente">›</button>
+                        <!-- mobile navigation elements for Swiper to bind -->
+                        <button ref="mobilePrevBtn" aria-hidden class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 pointer-events-auto z-50">‹</button>
+                        <button ref="mobileNextBtn" aria-hidden class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 pointer-events-auto z-50">›</button>
                     </div>
                 </div>
 
@@ -155,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount, watch, nextTick } from 'vue'
 import axios from 'axios'
 import TechnologiesShowcase from '@/Components/Admin/TechnologiesShowcase.vue'
 // Swiper
@@ -181,22 +183,55 @@ const navigationLockMs = 4000
 const swiperRef = ref(null)
 // Template component ref (component exposes `.swiper`)
 const swiperEl = ref(null)
+// explicit DOM refs for navigation elements
+const prevBtn = ref(null)
+const nextBtn = ref(null)
+// mobile-specific DOM refs (Swiper will bind to these for <=1099)
+const mobilePrevBtn = ref(null)
+const mobileNextBtn = ref(null)
 
 const onSwiper = (swiperInstance) => {
-    // Swiper v9 passes the instance here; store it for programmatic control
+    // store instance for programmatic control
     swiperRef.value = swiperInstance
-    // also sync component ref if available
+    // sometimes the component exposes .swiper lazily
     if (swiperEl.value && !swiperEl.value.swiper) {
-        // sometimes the component exposes .swiper lazily
         try { swiperEl.value.swiper = swiperInstance } catch (e) { /* ignore */ }
     }
-}
+    try {
+        console.debug('[AboutLab] onSwiper - instance stored', { hasRef: !!swiperRef.value, params: swiperInstance && swiperInstance.params })
+    } catch (e) { /* noop */ }
 
-const autoplayDelay = computed(() => visibleCount.value === 1 ? largeDelayMs : smallDelayMs)
-// visibleCount: 1 for hero screens (>=1100), 3 for large (>=1024 && <1100 -> still treated as 3), 1 for small
-// Make desktop mode reactive via a ref and matchMedia listener so template conditional updates immediately
-const isDesktopMode = ref(false)
-const visibleCount = ref(1)
+    // bind navigation to mobile buttons if present (and we're in mobile mode)
+    nextTick(() => {
+        try {
+            const s = swiperRef.value
+            // ensure swiper uses our computed timings
+            try {
+                if (s) {
+                    s.params.autoplay = s.params.autoplay || {}
+                    s.params.autoplay.delay = autoplayDelay.value
+                    s.params.autoplay.disableOnInteraction = false
+                    s.params.waitForTransition = true
+                    s.params.speed = swiperSpeed.value
+                    try { s.update() } catch (e) { /* ignore */ }
+                    try { if (s.autoplay && !s.autoplay.running) { s.autoplay.start(); console.debug('[AboutLab] onSwiper - autoplay started with delay', autoplayDelay.value) } } catch (e) { /* ignore */ }
+                }
+            } catch (e) { /* ignore */ }
+            if (!s || !s.params || !s.navigation) return
+            if (!isDesktopMode.value && mobilePrevBtn.value && mobileNextBtn.value) {
+                s.params.navigation = s.params.navigation || {}
+                s.params.navigation.prevEl = mobilePrevBtn.value
+                s.params.navigation.nextEl = mobileNextBtn.value
+                try { s.navigation.destroy() } catch (e) { /* ignore */ }
+                try { s.navigation.init() } catch (e) { /* ignore */ }
+                try { s.navigation.update() } catch (e) { /* ignore */ }
+            } else {
+                // ensure mobile navigation isn't bound when switching to desktop
+                try { s.navigation.destroy() } catch (e) { /* ignore */ }
+            }
+        } catch (e) { /* ignore */ }
+    })
+}
 
 let mqlDesktop = null
 let mqlLarge = null
@@ -291,12 +326,45 @@ const swiperItems = computed(() => {
     return contents.value.filter(c => !(featuredContent.value && c.id === featuredContent.value.id))
 })
 
-// Swiper breakpoints: 1 slide default, 2 slides >=672, 3 slides >=860 (Swiper only active <=1099)
+// Swiper breakpoints: 1 slide default, 2 slides >=672 (keep 2 slides up to 1099)
 const swiperBreakpoints = {
     0: { slidesPerView: 1 },
-    672: { slidesPerView: 2 },
-    860: { slidesPerView: 3 }
+    672: { slidesPerView: 2 }
 }
+
+// desktop detection and visible count
+const isDesktopMode = ref(false)
+const visibleCount = ref(1)
+
+// autoplay computed delay depending on visible count and device mode
+const autoplayDelay = computed(() => {
+    // prefer explicit desktop mode: desktop uses largeDelayMs, mobile/tablet uses smallDelayMs
+    if (isDesktopMode.value) return largeDelayMs
+    return smallDelayMs
+})
+
+// swiper transition speed (ms)
+const swiperSpeed = ref(1200)
+
+// rebind navigation when mode changes (desktop <-> mobile)
+watch(isDesktopMode, (desktop) => {
+    nextTick(() => {
+        try {
+            const s = swiperRef.value
+            if (!s || !s.params || !s.navigation) return
+            if (!desktop && mobilePrevBtn.value && mobileNextBtn.value) {
+                s.params.navigation = s.params.navigation || {}
+                s.params.navigation.prevEl = mobilePrevBtn.value
+                s.params.navigation.nextEl = mobileNextBtn.value
+                try { s.navigation.destroy() } catch (e) { /* ignore */ }
+                try { s.navigation.init() } catch (e) { /* ignore */ }
+                try { s.navigation.update() } catch (e) { /* ignore */ }
+            } else {
+                try { s.navigation.destroy() } catch (e) { /* ignore */ }
+            }
+        } catch (e) { /* ignore */ }
+    })
+})
 
 const visibleItems = computed(() => {
     const items = contents.value || []
@@ -313,71 +381,164 @@ const visibleItems = computed(() => {
 })
 
 const startAutoplay = () => {
-    stopAutoplay()
-    intervalRef.value = setInterval(() => {
-    if (!contents.value || contents.value.length <= 1) return
-    // block navigation briefly when autoplay advances
-    lockNavigation()
-    index.value = (index.value + 1) % contents.value.length
-    }, autoplayDelay.value)
-    // also start swiper autoplay if present
-    startSwiperAutoplay()
+    try {
+        // Desktop: use a dedicated interval to advance the internal index for hero view
+        if (isDesktopMode.value) {
+            // avoid multiple intervals
+            if (intervalRef.value) return
+            intervalRef.value = setInterval(() => {
+                if (!contents.value || contents.value.length <= 1) return
+                lockNavigation()
+                index.value = (index.value + 1) % contents.value.length
+            }, 5000) // 5 seconds for desktop
+            console.debug('[AboutLab] startAutoplay - desktop interval started (5s)')
+            return
+        }
+        // Mobile/tablet: rely on Swiper autoplay
+        startSwiperAutoplay()
+    } catch (e) { /* ignore */ }
 }
 
 const stopAutoplay = () => {
-    if (intervalRef.value) {
-        clearInterval(intervalRef.value)
-        intervalRef.value = null
-    }
-    // also stop swiper autoplay if present
-    stopSwiperAutoplay()
+    try { stopSwiperAutoplay() } catch (e) { /* ignore */ }
+}
+
+// stop any desktop interval
+const stopDesktopInterval = () => {
+    try {
+        if (intervalRef.value) {
+            clearInterval(intervalRef.value)
+            intervalRef.value = null
+            console.debug('[AboutLab] stopDesktopInterval - cleared')
+        }
+    } catch (e) { /* ignore */ }
 }
 
 // Also control Swiper autoplay if present
 const startSwiperAutoplay = () => {
     if (swiperRef.value && swiperRef.value.autoplay && typeof swiperRef.value.autoplay.start === 'function') {
-        try { swiperRef.value.autoplay.start() } catch (e) { /* ignore */ }
+        try {
+            // only start if not already running to avoid double-start and race conditions
+            if (!swiperRef.value.autoplay.running) swiperRef.value.autoplay.start()
+        } catch (e) { /* ignore */ }
     }
 }
 
 const stopSwiperAutoplay = () => {
     if (swiperRef.value && swiperRef.value.autoplay && typeof swiperRef.value.autoplay.stop === 'function') {
-        try { swiperRef.value.autoplay.stop() } catch (e) { /* ignore */ }
+        try {
+            if (swiperRef.value.autoplay.running) swiperRef.value.autoplay.stop()
+        } catch (e) { /* ignore */ }
     }
+}
+
+// Ensure autoplay resumes after manual interaction (prev/next)
+const resumeAutoplayAfterInteraction = () => {
+    try {
+        // small debounce so we don't immediately restart during transition
+    setTimeout(() => {
+            // use startAutoplay which handles desktop vs mobile logic
+            try { startAutoplay() } catch (e) { /* ignore */ }
+    }, 300)
+    } catch (e) { /* ignore */ }
+}
+
+// stronger resume: stop everything and re-init depending on mode
+const forceResumeAutoplay = () => {
+    try {
+        // clear any JS interval
+        if (intervalRef.value) {
+            clearInterval(intervalRef.value)
+            intervalRef.value = null
+        }
+        // stop swiper autoplay to reset state
+        try {
+            if (swiperRef.value && swiperRef.value.autoplay && swiperRef.value.autoplay.running) {
+                console.debug('[AboutLab] forceResumeAutoplay - stopping swiper autoplay')
+                swiperRef.value.autoplay.stop()
+            }
+        } catch (e) { /* ignore */ }
+        // restart based on mode
+        if (isDesktopMode.value) {
+            // start our desktop interval (explicit 5s for >=1100px)
+            try { stopDesktopInterval() } catch (e) { /* ignore */ }
+            intervalRef.value = setInterval(() => {
+                if (!contents.value || contents.value.length <= 1) return
+                lockNavigation()
+                index.value = (index.value + 1) % contents.value.length
+            }, 5000)
+            console.debug('[AboutLab] forceResumeAutoplay - desktop interval started (5s)')
+        } else {
+            // mobile: reconfigure and start swiper autoplay
+            try {
+                const s = swiperRef.value
+                if (s) {
+                    console.debug('[AboutLab] forceResumeAutoplay - reconfiguring swiper autoplay with delay', autoplayDelay.value)
+                    s.params.autoplay = s.params.autoplay || {}
+                    s.params.autoplay.delay = autoplayDelay.value
+                    // ensure speed is applied
+                    s.params.speed = swiperSpeed.value
+                    try { s.update() } catch (e) { /* ignore */ }
+                    try {
+                        // robust restart: stop then start after a short pause to avoid races
+                        if (s.autoplay && s.autoplay.running) {
+                            try { s.autoplay.stop() } catch (e) { /* ignore */ }
+                        }
+                        setTimeout(() => {
+                            try {
+                                if (s.autoplay && !s.autoplay.running) s.autoplay.start()
+                                console.debug('[AboutLab] forceResumeAutoplay - swiper autoplay started')
+                            } catch (e) { console.debug('[AboutLab] forceResumeAutoplay - start failed', e) }
+                        }, 120)
+                    } catch (e) { /* ignore */ }
+                }
+            } catch (e) { /* ignore */ }
+        }
+    } catch (e) { /* ignore */ }
 }
 
 const next = () => {
     if (!canNavigate.value) return
     if (!contents.value || contents.value.length <= 1) return
     direction.value = 'next'
-    // If not desktop (Swiper active), try to control Swiper instance.
+    // If not desktop (Swiper active), prefer controlling the swiper instance explicitly
     if (!isDesktopMode.value) {
         try {
-            // Prefer the Swiper instance (supports loop)
-            if (swiperRef.value && typeof swiperRef.value.slideNext === 'function') {
-                swiperRef.value.slideNext()
-                lockNavigation()
-                return
-            }
-            if (swiperEl.value && swiperEl.value.swiper && typeof swiperEl.value.swiper.slideNext === 'function') {
-                swiperEl.value.swiper.slideNext()
-                lockNavigation()
-                return
-            }
-            if (swiperEl.value && typeof swiperEl.value.slideNext === 'function') {
-                swiperEl.value.slideNext()
-                lockNavigation()
-                return
+            if (swiperRef.value) {
+                const s = swiperRef.value
+                const loop = !!s.params && !!s.params.loop
+                const len = (contents.value && contents.value.length) ? contents.value.length : 0
+                if (len <= 0) return
+                if (loop && typeof s.slideToLoop === 'function') {
+                    const real = typeof s.realIndex === 'number' ? s.realIndex : 0
+                    const targetReal = (real + 1) % len
+                    console.debug('[AboutLab] next() slideToLoop', { real, targetReal, len })
+                    s.slideToLoop(targetReal)
+                    lockNavigation()
+                    return
+                }
+                if (typeof s.slideTo === 'function') {
+                    const active = (typeof s.activeIndex === 'number') ? s.activeIndex : 0
+                    const target = active + 1
+                    try { s.slideTo(target) } catch (err) { try { s.slideNext() } catch (e) { /* ignore */ } }
+                    lockNavigation()
+                    return
+                }
             }
         } catch (e) {
-            console.warn('next() swipe control failed, falling back to index', e)
+            console.warn('next() forced slideTo failed, falling back to index', e)
         }
-        // fallback (non-looping logic)
+        // fallback
         index.value = (index.value + 1) % contents.value.length
     } else {
         index.value = (index.value + 1) % contents.value.length
     }
     lockNavigation()
+    console.debug('[AboutLab] next() invoked, activeIndex:', swiperRef.value?.activeIndex, 'realIndex:', swiperRef.value?.realIndex)
+    // ensure autoplay continues after manual control
+    resumeAutoplayAfterInteraction()
+    // stronger resume to ensure consistent loop
+    forceResumeAutoplay()
 }
 
 const prev = () => {
@@ -386,29 +547,40 @@ const prev = () => {
     direction.value = 'prev'
     if (!isDesktopMode.value) {
         try {
-            if (swiperRef.value && typeof swiperRef.value.slidePrev === 'function') {
-                swiperRef.value.slidePrev()
-                lockNavigation()
-                return
-            }
-            if (swiperEl.value && swiperEl.value.swiper && typeof swiperEl.value.swiper.slidePrev === 'function') {
-                swiperEl.value.swiper.slidePrev()
-                lockNavigation()
-                return
-            }
-            if (swiperEl.value && typeof swiperEl.value.slidePrev === 'function') {
-                swiperEl.value.slidePrev()
-                lockNavigation()
-                return
+            if (swiperRef.value) {
+                const s = swiperRef.value
+                const loop = !!s.params && !!s.params.loop
+                const len = (contents.value && contents.value.length) ? contents.value.length : 0
+                if (len <= 0) return
+                if (loop && typeof s.slideToLoop === 'function') {
+                    const real = typeof s.realIndex === 'number' ? s.realIndex : 0
+                    const targetReal = (real - 1 + len) % len
+                    console.debug('[AboutLab] prev() slideToLoop', { real, targetReal, len })
+                    s.slideToLoop(targetReal)
+                    lockNavigation()
+                    return
+                }
+                if (typeof s.slideTo === 'function') {
+                    const active = (typeof s.activeIndex === 'number') ? s.activeIndex : 0
+                    const target = active - 1
+                    try { s.slideTo(target) } catch (err) { try { s.slidePrev() } catch (e) { /* ignore */ } }
+                    lockNavigation()
+                    return
+                }
             }
         } catch (e) {
-            console.warn('prev() swipe control failed, falling back to index', e)
+            console.warn('prev() forced slideTo failed, falling back to index', e)
         }
         index.value = (index.value - 1 + contents.value.length) % contents.value.length
     } else {
         index.value = (index.value - 1 + contents.value.length) % contents.value.length
     }
     lockNavigation()
+    console.debug('[AboutLab] prev() invoked, activeIndex:', swiperRef.value?.activeIndex, 'realIndex:', swiperRef.value?.realIndex)
+    // ensure autoplay continues after manual control
+    resumeAutoplayAfterInteraction()
+    // stronger resume to ensure consistent loop
+    forceResumeAutoplay()
 }
 
 // Swiper slide events
