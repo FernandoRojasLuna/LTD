@@ -24,35 +24,50 @@
                         <p class="text-xl text-gray-600 max-w-3xl mx-auto">Ofrecemos soluciones integrales en transformación digital, combinando innovación y experiencia.</p>
                     </div>
 
-                <!-- Mobile carousel (1-up on small screens) -->
-                <div class="block lg:hidden">
+                <!-- Swiper for screens below 1100 (adaptive carousel 1-4 slides) -->
+                <div v-if="!isDesktopMode">
                     <div class="relative" @mouseenter="stopAutoplay" @mouseleave="startAutoplay">
                         <div class="overflow-hidden">
-                                    <div class="transition-stack relative">
-                                        <transition :name="'fade-3d-' + direction" mode="out-in">
-                                            <div v-if="visibleItems.length" :key="visibleItems[0].id" class="w-full px-4 transition-slide">
-                                            <div class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
-                                                <div v-if="visibleItems[0].image" class="mb-4">
-                                                    <img :src="visibleItems[0].image_url || visibleItems[0].image" :alt="visibleItems[0].title" class="w-full h-48 object-cover rounded-lg" loading="lazy" />
-                                                </div>
-                                                <h4 class="text-xl font-semibold text-gray-900 mb-3">{{ visibleItems[0].title }}</h4>
-                                                <div class="text-gray-600 line-clamp-3" v-html="visibleItems[0].content"></div>
-                                                <div class="mt-4 flex justify-center">
-                                                    <div class="flex justify-center">
-                                                        <span :class="[getTypeColor(visibleItems[0].type), 'badge-corporate inline-flex items-center gap-2']">
-                                                            <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                                                <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
-                                                                <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
-                                                                <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
-                                                            </svg>
-                                                            <span class="badge-text">{{ getTypeLabel(visibleItems[0].type) }}</span>
-                                                        </span>
-                                                    </div>
-                                                </div>
+                            <Swiper
+                                ref="swiperEl"
+                                :modules="[Navigation, Pagination, Autoplay]"
+                                :spaceBetween="20"
+                                    :breakpoints="swiperBreakpoints"
+                        :autoplay="{ delay: autoplayDelay.value, disableOnInteraction: false }"
+                            :watchOverflow="true"
+                            :loop="true"
+                                    :slidesPerGroup="1"
+                                    :autoHeight="true"
+                                    :centeredSlides="false"
+                                    navigation
+                                    pagination
+                                    @swiper="onSwiper"
+                                    @slideChangeTransitionStart="onSlideChangeStart"
+                                    @slideChangeTransitionEnd="onSlideChangeEnd"
+                                    class="py-4"
+                            >
+                                <SwiperSlide v-for="(s, i) in swiperItems" :key="`slide-${s.id}-${i}`" class="px-4">
+                                    <div class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                                        <div v-if="s.image" class="mb-4">
+                                            <img :src="s.image_url || s.image" :alt="s.title" class="w-full h-48 object-cover rounded-lg" loading="lazy" />
+                                        </div>
+                                        <h4 class="text-xl font-semibold text-gray-900 mb-3">{{ s.title }}</h4>
+                                        <div class="text-gray-600 line-clamp-3" v-html="s.content"></div>
+                                        <div class="mt-4 flex justify-center">
+                                            <div class="flex justify-center">
+                                                <span :class="[getTypeColor(s.type), 'badge-corporate inline-flex items-center gap-2']">
+                                                    <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                                        <path d="M12 2L15 8H9L12 2Z" fill="currentColor" opacity="0.9"/>
+                                                        <path d="M12 22L9 16H15L12 22Z" fill="currentColor" opacity="0.8"/>
+                                                        <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.85"/>
+                                                    </svg>
+                                                    <span class="badge-text">{{ getTypeLabel(s.type) }}</span>
+                                                </span>
                                             </div>
                                         </div>
-                                        </transition>
                                     </div>
+                                </SwiperSlide>
+                            </Swiper>
                         </div>
 
                         <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="prev" aria-label="Anterior">‹</button>
@@ -61,7 +76,7 @@
                 </div>
 
                 <!-- Desktop carousel (3-up modular) -->
-                <div class="hidden lg:block">
+                <div v-if="isDesktopMode">
                     <div class="relative" @mouseenter="stopAutoplay" @mouseleave="startAutoplay">
                         <div class="flex justify-center items-stretch mx-auto w-full xl:max-w-6xl">
                             <div class="transition-stack w-full relative">
@@ -81,8 +96,8 @@
                                         <!-- Right: Centered content -->
                                         <div class="hero-body w-1/2 bg-white flex items-center justify-center p-12">
                                             <div class="max-w-xl text-center">
-                                                <!-- Subtitle (only on large screens) -->
-                                                <p class="subtitle-corporate hidden lg:block mb-6 text-center">{{ currentCard?.subtitle }}</p>
+                                                <!-- Subtitle (only on desktop mode) -->
+                                                <p v-if="isDesktopMode" class="subtitle-corporate mb-6 text-center">{{ currentCard?.subtitle }}</p>
                                                 <!-- Content -->
                                                 <div class="text-gray-600 text-base mb-6" v-html="currentCard?.content"></div>
                                                 <div class="flex justify-center">
@@ -110,7 +125,7 @@
                                         </div>
                                         <div class="card-body px-6 py-6 flex-1 flex flex-col">
                                             <h4 class="text-2xl font-semibold text-gray-900 mb-3">{{ c.title }}</h4>
-                                            <p class="hidden lg:block text-sm text-indigo-600 uppercase tracking-wide font-semibold mb-3">{{ c.subtitle }}</p>
+                                            <p v-if="isDesktopMode" class="text-sm text-indigo-600 uppercase tracking-wide font-semibold mb-3">{{ c.subtitle }}</p>
                                             <div class="text-gray-600 text-sm mb-4 line-clamp-4" v-html="c.content"></div>
                                         </div>
                                     </div>
@@ -143,6 +158,13 @@
 import { ref, onMounted, computed, onBeforeUnmount, watch } from 'vue'
 import axios from 'axios'
 import TechnologiesShowcase from '@/Components/Admin/TechnologiesShowcase.vue'
+// Swiper
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
+import SwiperCore, { Navigation, Pagination, Autoplay } from 'swiper'
+SwiperCore.use([Navigation, Pagination, Autoplay])
 
 const featuredContent = ref(null)
 const contents = ref([])
@@ -153,30 +175,95 @@ const smallDelayMs = 3000
 const largeDelayMs = 6000
 const direction = ref('next')
 const canNavigate = ref(true)
-const navigationLockMs = 6000
+const navigationLockMs = 4000
+
+// Swiper instance ref (for controlling slides from outside)
+const swiperRef = ref(null)
+// Template component ref (component exposes `.swiper`)
+const swiperEl = ref(null)
+
+const onSwiper = (swiperInstance) => {
+    // Swiper v9 passes the instance here; store it for programmatic control
+    swiperRef.value = swiperInstance
+    // also sync component ref if available
+    if (swiperEl.value && !swiperEl.value.swiper) {
+        // sometimes the component exposes .swiper lazily
+        try { swiperEl.value.swiper = swiperInstance } catch (e) { /* ignore */ }
+    }
+}
 
 const autoplayDelay = computed(() => visibleCount.value === 1 ? largeDelayMs : smallDelayMs)
-// visibleCount: 1 for very large screens (>=1280), 3 for large (>=1024), 1 for small
+// visibleCount: 1 for hero screens (>=1100), 3 for large (>=1024 && <1100 -> still treated as 3), 1 for small
+// Make desktop mode reactive via a ref and matchMedia listener so template conditional updates immediately
+const isDesktopMode = ref(false)
 const visibleCount = ref(1)
+
+let mqlDesktop = null
+let mqlLarge = null
 
 const updateVisibleCount = () => {
     try {
-        if (window.matchMedia('(min-width: 1280px)').matches) {
+        if (mqlDesktop && mqlDesktop.matches) {
             visibleCount.value = 1
+            isDesktopMode.value = true
             return
         }
-        if (window.matchMedia('(min-width: 1024px)').matches) {
+        isDesktopMode.value = false
+        if (mqlLarge && mqlLarge.matches) {
             visibleCount.value = 3
             return
         }
         visibleCount.value = 1
     } catch (e) {
         // fallback
-        visibleCount.value = window.innerWidth >= 1280 ? 1 : (window.innerWidth >= 1024 ? 3 : 1)
+        const w = window.innerWidth
+        isDesktopMode.value = w >= 1100
+        visibleCount.value = w >= 1024 && w < 1100 ? 3 : 1
     }
 }
 
-window.addEventListener('resize', updateVisibleCount)
+// set up matchMedia objects
+const setupMediaQueries = () => {
+    try {
+        mqlDesktop = window.matchMedia('(min-width: 1100px)')
+        mqlLarge = window.matchMedia('(min-width: 1024px)')
+
+        // prefer 'change' but fallback to 'resize' if unavailable
+        if (typeof mqlDesktop.addEventListener === 'function') {
+            mqlDesktop.addEventListener('change', updateVisibleCount)
+            mqlLarge.addEventListener('change', updateVisibleCount)
+        } else if (typeof mqlDesktop.addListener === 'function') {
+            mqlDesktop.addListener(updateVisibleCount)
+            mqlLarge.addListener(updateVisibleCount)
+        }
+        // also keep window resize as a safety net
+        window.addEventListener('resize', updateVisibleCount)
+    } catch (e) {
+        window.addEventListener('resize', updateVisibleCount)
+    }
+}
+
+const teardownMediaQueries = () => {
+    try {
+        if (mqlDesktop) {
+            if (typeof mqlDesktop.removeEventListener === 'function') {
+                mqlDesktop.removeEventListener('change', updateVisibleCount)
+            } else if (typeof mqlDesktop.removeListener === 'function') {
+                mqlDesktop.removeListener(updateVisibleCount)
+            }
+        }
+        if (mqlLarge) {
+            if (typeof mqlLarge.removeEventListener === 'function') {
+                mqlLarge.removeEventListener('change', updateVisibleCount)
+            } else if (typeof mqlLarge.removeListener === 'function') {
+                mqlLarge.removeListener(updateVisibleCount)
+            }
+        }
+        window.removeEventListener('resize', updateVisibleCount)
+    } catch (e) {
+        window.removeEventListener('resize', updateVisibleCount)
+    }
+}
 
 const getVisibleCards = computed(() => {
     const items = contents.value || []
@@ -198,6 +285,18 @@ const desktopItems = computed(() => {
     // exclude featuredContent from the list to avoid duplicate
     return items.filter(c => !(featuredContent.value && c.id === featuredContent.value.id))
 })
+
+// Items to feed to Swiper (exclude featured)
+const swiperItems = computed(() => {
+    return contents.value.filter(c => !(featuredContent.value && c.id === featuredContent.value.id))
+})
+
+// Swiper breakpoints: 1 slide default, 2 slides >=672, 3 slides >=860 (Swiper only active <=1099)
+const swiperBreakpoints = {
+    0: { slidesPerView: 1 },
+    672: { slidesPerView: 2 },
+    860: { slidesPerView: 3 }
+}
 
 const visibleItems = computed(() => {
     const items = contents.value || []
@@ -221,6 +320,8 @@ const startAutoplay = () => {
     lockNavigation()
     index.value = (index.value + 1) % contents.value.length
     }, autoplayDelay.value)
+    // also start swiper autoplay if present
+    startSwiperAutoplay()
 }
 
 const stopAutoplay = () => {
@@ -228,13 +329,54 @@ const stopAutoplay = () => {
         clearInterval(intervalRef.value)
         intervalRef.value = null
     }
+    // also stop swiper autoplay if present
+    stopSwiperAutoplay()
+}
+
+// Also control Swiper autoplay if present
+const startSwiperAutoplay = () => {
+    if (swiperRef.value && swiperRef.value.autoplay && typeof swiperRef.value.autoplay.start === 'function') {
+        try { swiperRef.value.autoplay.start() } catch (e) { /* ignore */ }
+    }
+}
+
+const stopSwiperAutoplay = () => {
+    if (swiperRef.value && swiperRef.value.autoplay && typeof swiperRef.value.autoplay.stop === 'function') {
+        try { swiperRef.value.autoplay.stop() } catch (e) { /* ignore */ }
+    }
 }
 
 const next = () => {
     if (!canNavigate.value) return
     if (!contents.value || contents.value.length <= 1) return
     direction.value = 'next'
-    index.value = (index.value + 1) % contents.value.length
+    // If not desktop (Swiper active), try to control Swiper instance.
+    if (!isDesktopMode.value) {
+        try {
+            // Prefer the Swiper instance (supports loop)
+            if (swiperRef.value && typeof swiperRef.value.slideNext === 'function') {
+                swiperRef.value.slideNext()
+                lockNavigation()
+                return
+            }
+            if (swiperEl.value && swiperEl.value.swiper && typeof swiperEl.value.swiper.slideNext === 'function') {
+                swiperEl.value.swiper.slideNext()
+                lockNavigation()
+                return
+            }
+            if (swiperEl.value && typeof swiperEl.value.slideNext === 'function') {
+                swiperEl.value.slideNext()
+                lockNavigation()
+                return
+            }
+        } catch (e) {
+            console.warn('next() swipe control failed, falling back to index', e)
+        }
+        // fallback (non-looping logic)
+        index.value = (index.value + 1) % contents.value.length
+    } else {
+        index.value = (index.value + 1) % contents.value.length
+    }
     lockNavigation()
 }
 
@@ -242,8 +384,40 @@ const prev = () => {
     if (!canNavigate.value) return
     if (!contents.value || contents.value.length <= 1) return
     direction.value = 'prev'
-    index.value = (index.value - 1 + contents.value.length) % contents.value.length
+    if (!isDesktopMode.value) {
+        try {
+            if (swiperRef.value && typeof swiperRef.value.slidePrev === 'function') {
+                swiperRef.value.slidePrev()
+                lockNavigation()
+                return
+            }
+            if (swiperEl.value && swiperEl.value.swiper && typeof swiperEl.value.swiper.slidePrev === 'function') {
+                swiperEl.value.swiper.slidePrev()
+                lockNavigation()
+                return
+            }
+            if (swiperEl.value && typeof swiperEl.value.slidePrev === 'function') {
+                swiperEl.value.slidePrev()
+                lockNavigation()
+                return
+            }
+        } catch (e) {
+            console.warn('prev() swipe control failed, falling back to index', e)
+        }
+        index.value = (index.value - 1 + contents.value.length) % contents.value.length
+    } else {
+        index.value = (index.value - 1 + contents.value.length) % contents.value.length
+    }
     lockNavigation()
+}
+
+// Swiper slide events
+const onSlideChangeStart = () => {
+    lockNavigation()
+}
+
+const onSlideChangeEnd = () => {
+    // allow any additional small adjustments after transition
 }
 
 const lockNavigation = () => {
@@ -253,7 +427,7 @@ const lockNavigation = () => {
 
 onBeforeUnmount(() => {
     stopAutoplay()
-    window.removeEventListener('resize', updateVisibleCount)
+    teardownMediaQueries()
 })
 
 // Methods: fetch content
@@ -306,6 +480,9 @@ const restTitle = (title = '') => {
 }
 
 onMounted(async () => {
+    setupMediaQueries()
+    updateVisibleCount()
+
     await fetchFeaturedContent()
     await fetchContents()
     startAutoplay()
@@ -408,7 +585,7 @@ onMounted(async () => {
 @media (max-width: 1440px) {
     .hero-overlay-title { font-size: 3.25rem; }
 }
-@media (max-width: 1280px) {
+@media (max-width: 1099px) {
     .hero-card { flex-direction: column; height: auto; }
     .hero-image, .hero-body { width: 100%; }
     .hero-overlay-title { font-size: 2.25rem; padding-left: 1rem; }

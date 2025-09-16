@@ -16,7 +16,7 @@
 
       <div v-else class="overflow-hidden">
         <!-- Carrusel continuo tipo "culebra": duplicamos la secuencia y animamos el track con keyframes -->
-        <div ref="viewport" class="relative w-full overflow-hidden">
+        <div ref="viewport" class="relative w-full overflow-hidden" @mouseenter="stopAutoplay" @mouseleave="startAutoplay">
           <div
             ref="track"
             class="tech-track flex items-stretch will-change-transform"
@@ -46,6 +46,10 @@ const loading = ref(false)
 
 const viewport = ref(null)
 const track = ref(null)
+
+// missing reactive state used elsewhere
+const position = ref(0)
+const animating = ref(true)
 
 // Carousel config
 const VISIBLE = 7 // always show 7 items
@@ -91,11 +95,13 @@ const load = async () => {
   try {
     const data = await getActiveTechnologies()
     technologies.value = normalizeIcons(data || [])
-    // reset position
+    // reset position and ensure animation state is in sync
     position.value = 0
-    animating.value = false
     await nextTick()
-  // continuous animation handled by CSS; no JS autoplay needed
+    // allow the CSS animation to run by default
+    animating.value = true
+    // if track element exists, ensure animationPlayState reflects current state
+    if (track.value && track.value.style) track.value.style.animationPlayState = animating.value ? 'running' : 'paused'
   } catch (e) {
     console.error('load technologies', e)
   } finally {
@@ -104,10 +110,20 @@ const load = async () => {
 }
 
 // continuous animation - minimal JS: allow pause on hover
-const startAutoplay = () => { /* noop, CSS handles it */ }
-const stopAutoplay = () => { /* noop */ }
+const startAutoplay = () => {
+  animating.value = true
+  if (track.value && track.value.style) track.value.style.animationPlayState = 'running'
+}
+const stopAutoplay = () => {
+  animating.value = false
+  if (track.value && track.value.style) track.value.style.animationPlayState = 'paused'
+}
 
-onMounted(() => load())
+onMounted(async () => {
+  await load()
+  // ensure animation is running after mount
+  startAutoplay()
+})
 onBeforeUnmount(() => stopAutoplay())
 
 // expose for template if needed
