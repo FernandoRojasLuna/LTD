@@ -53,7 +53,8 @@
                         <!-- Action Buttons -->
                         <div class="flex items-start space-x-4 ml-8">
                             <button 
-                                v-if="project.url" 
+                                v-if="project.url"
+                                v-show="shouldShowAction('url')"
                                 @click="openUrl(project.url)"
                                 class="group flex items-center px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105"
                             >
@@ -62,9 +63,10 @@
                                 </svg>
                                 <span class="text-white font-semibold">Ver Proyecto</span>
                             </button>
-                            
+
                             <button 
-                                v-if="project.repository" 
+                                v-if="project.repository"
+                                v-show="shouldShowAction('repo')"
                                 @click="openUrl(project.repository)"
                                 class="group flex items-center px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-2xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105"
                             >
@@ -73,16 +75,18 @@
                                 </svg>
                                 <span class="text-white font-semibold">Código</span>
                             </button>
-                            
-                            <button 
-                                @click="$emit('close')" 
-                                class="group w-12 h-12 bg-white/10 backdrop-blur-sm border border-white/30 rounded-xl hover:bg-red-500/20 transition-all duration-300 flex items-center justify-center"
-                            >
-                                <svg class="w-6 h-6 text-white group-hover:text-red-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
                         </div>
+
+                        <!-- Close button - always visible and positioned absolute to avoid being hidden on small widths -->
+                        <button 
+                            @click="$emit('close')" 
+                            class="absolute top-4 right-4 z-50 group w-11 h-11 bg-white/10 backdrop-blur-sm border border-white/30 rounded-xl hover:bg-red-500/20 transition-all duration-300 flex items-center justify-center"
+                            aria-label="Cerrar"
+                        >
+                            <svg class="w-5 h-5 text-white group-hover:text-red-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -214,8 +218,8 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- Grid normal para 3 o menos tecnologías -->
-                                    <div v-if="project.technologies.length <= 3" class="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <!-- Grid normal para 1 o 2 tecnologías; usar carrusel si hay más de 2 -->
+                                    <div v-if="project.technologies.length <= 2" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                         <div 
                                             v-for="tech in project.technologies" 
                                             :key="tech.id"
@@ -250,90 +254,36 @@
                                         </div>
                                     </div>
 
-                                    <!-- Carrusel para más de 3 tecnologías -->
+                                    <!-- Carrusel para más de 2 tecnologías: Swiper responsive (incluye 3) -->
                                     <div v-else class="relative">
-                                        <!-- Contenedor principal con botones laterales -->
-                                        <div class="relative flex items-center">
-                                            <!-- Botón anterior (izquierda) -->
-                                            <button 
-                                                @click="previousSlide"
-                                                class="absolute left-0 z-10 flex items-center justify-center w-12 h-12 bg-white border-2 border-gray-200 rounded-full hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300 focus:outline-none group shadow-lg"
-                                                style="transform: translateX(-50%);"
-                                            >
-                                                <svg class="w-6 h-6 text-gray-600 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                                </svg>
-                                            </button>
-
-                                            <!-- Área de las tarjetas -->
-                                            <div class="flex-1 px-8">
-                                                <div class="grid grid-cols-3 gap-6">
-                                                    <div 
-                                                        v-for="tech in getVisibleTechs" 
-                                                        :key="`${tech.id}-${currentIndex}`"
-                                                        class="group relative bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 cursor-pointer overflow-hidden"
-                                                    >
-                                                        <!-- Tech Card Background Gradient -->
-                                                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" :style="{ background: `linear-gradient(135deg, ${tech.color}15, ${tech.color}25)` }"></div>
-                                                        
-                                                        <!-- Tech Logo/Icon -->
-                                                        <div class="relative text-center">
-                                                            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110" :style="{ backgroundColor: tech.color + '20' }">
-                                                                <!-- Icon fallback if tech.icon doesn't exist or load -->
-                                                                <div v-if="!tech.icon && !getTechIcon(tech.name)" class="w-8 h-8 rounded-lg flex items-center justify-center text-xl font-bold" :style="{ backgroundColor: tech.color, color: 'white' }">
-                                                                    {{ tech.name.charAt(0) }}
-                                                                </div>
-                                                                <!-- Font icon if available (priority to database icon) -->
-                                                                <i v-else :class="tech.icon || getTechIcon(tech.name)" :style="{ color: tech.color }" class="text-3xl"></i>
-                                                            </div>
-                                                            
-                                                            <!-- Tech Name -->
-                                                            <h4 class="font-bold text-gray-900 text-lg mb-2 group-hover:text-gray-800 transition-colors duration-300">{{ tech.name }}</h4>
-                                                            
-                                                            <!-- Tech Category Badge -->
-                                                            <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300" :style="{ backgroundColor: tech.color + '20', color: tech.color }">
-                                                                <div class="w-2 h-2 rounded-full mr-2" :style="{ backgroundColor: tech.color }"></div>
-                                                                <span v-if="getTechCategory(tech.name)">{{ getTechCategory(tech.name) }}</span>
-                                                            </div>
+                                        <Swiper
+                                            :modules="[Autoplay]"
+                                            :spaceBetween="12"
+                                            :loop="true"
+                                            :autoplay="{ delay: 2500, disableOnInteraction: false }"
+                                            :breakpoints="{
+                                                320: { slidesPerView: 1 },
+                                                480: { slidesPerView: 2 },
+                                                768: { slidesPerView: 3 }
+                                            }"
+                                            class="pt-4 pb-6"
+                                        >
+                                            <SwiperSlide v-for="(tech, idx) in project.technologies" :key="`ptech-${tech.id}-${idx}`">
+                                                <div class="group relative bg-white rounded-2xl p-4 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 cursor-pointer overflow-hidden">
+                                                    <div class="w-16 h-16 mx-auto mb-3 rounded-2xl flex items-center justify-center transition-all duration-500" :style="{ backgroundColor: tech.color + '20' }">
+                                                        <div v-if="!tech.icon && !getTechIcon(tech.name)" class="w-8 h-8 rounded-lg flex items-center justify-center text-xl font-bold" :style="{ backgroundColor: tech.color, color: 'white' }">
+                                                            {{ tech.name.charAt(0) }}
                                                         </div>
-                                                        
-                                                        <!-- Hover Effect Overlay -->
-                                                        <div class="absolute inset-0 border-2 border-transparent group-hover:border-opacity-50 rounded-2xl transition-all duration-500" :style="{ borderColor: tech.color }"></div>
+                                                        <i v-else :class="tech.icon || getTechIcon(tech.name)" :style="{ color: tech.color }" class="text-3xl"></i>
+                                                    </div>
+                                                    <h4 class="font-bold text-gray-900 text-center text-lg mb-2">{{ tech.name }}</h4>
+                                                    <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold mx-auto" :style="{ backgroundColor: tech.color + '20', color: tech.color }">
+                                                        <div class="w-2 h-2 rounded-full mr-2" :style="{ backgroundColor: tech.color }"></div>
+                                                        <span v-if="getTechCategory(tech.name)">{{ getTechCategory(tech.name) }}</span>
                                                     </div>
                                                 </div>
-                                            </div>
-
-                                            <!-- Botón siguiente (derecha) -->
-                                            <button 
-                                                @click="nextSlide"
-                                                class="absolute right-0 z-10 flex items-center justify-center w-12 h-12 bg-white border-2 border-gray-200 rounded-full hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300 focus:outline-none group shadow-lg"
-                                                style="transform: translateX(50%);"
-                                            >
-                                                <svg class="w-6 h-6 text-gray-600 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-
-                                        <!-- Navegación inferior limpia -->
-                                        <div class="mt-8">
-                                            <!-- Solo puntitos de navegación, más elegantes -->
-                                            <div class="flex justify-center space-x-3">
-                                                <button 
-                                                    v-for="(tech, index) in project.technologies" 
-                                                    :key="index"
-                                                    @click="goToSlide(index)"
-                                                    class="relative w-2.5 h-2.5 rounded-full transition-all duration-300 hover:scale-150 focus:outline-none group"
-                                                    :class="index === currentIndex ? 'bg-indigo-500' : 'bg-gray-300 hover:bg-gray-400'"
-                                                >
-                                                    <!-- Tooltip elegante con el nombre de la tecnología -->
-                                                    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20">
-                                                        {{ tech.name }}
-                                                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-gray-900"></div>
-                                                    </div>
-                                                </button>
-                                            </div>
-                                        </div>
+                                            </SwiperSlide>
+                                        </Swiper>
                                     </div>
                                 </div>
                             </div>
@@ -358,29 +308,30 @@
                                 
                                 <div class="relative">
                                     <!-- Header Section -->
-                                    <div class="flex items-center justify-between mb-10">
-                                        <div class="flex items-center">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl flex items-center justify-center mr-6 shadow-2xl">
-                                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                                        <div class="flex items-center space-x-4 w-full sm:w-auto">
+                                            <!-- Logo: ocultar en pantallas pequeñas para ganar espacio -->
+                                            <div class="hidden sm:flex w-12 sm:w-16 h-12 sm:h-16 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl items-center justify-center shadow-2xl flex-shrink-0">
+                                                <svg class="w-6 sm:w-8 h-6 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
                                             </div>
-                                            <div>
-                                                <h3 class="text-3xl font-bold bg-gradient-to-r from-indigo-900 to-purple-900 bg-clip-text text-transparent mb-1">
+                                            <div class="min-w-0">
+                                                <h3 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-900 to-purple-900 bg-clip-text text-transparent mb-0 truncate">
                                                     Cronología del Proyecto
                                                 </h3>
-                                                <p class="text-indigo-700 font-semibold">Roadmap ejecutivo y seguimiento de hitos</p>
+                                                <p class="text-indigo-700 font-semibold text-sm sm:text-base truncate">Roadmap ejecutivo y seguimiento de hitos</p>
                                             </div>
                                         </div>
-                                        
-                                        <!-- Project Progress Summary -->
-                                        <div class="bg-white rounded-2xl p-6 shadow-lg border border-indigo-100">
-                                            <div class="text-center">
-                                                <div class="text-3xl font-bold text-indigo-700 mb-1" :class="getProjectProgressData(project).textColor">
+
+                                        <!-- Project Progress Summary: en móvil se apila debajo del título para garantizar visibilidad -->
+                                        <div class="bg-white rounded-2xl p-3 sm:p-6 shadow-lg border border-indigo-100 mt-3 sm:mt-0 flex-shrink-0 w-full sm:w-auto">
+                                            <div class="text-center sm:text-center">
+                                                <div class="text-xl sm:text-3xl font-bold text-indigo-700 mb-1" :class="getProjectProgressData(project).textColor">
                                                     {{ getProjectProgressData(project).percentage }}%
                                                 </div>
-                                                <div class="text-sm text-gray-600 font-medium">Progreso Total</div>
-                                                <div class="w-20 bg-gray-200 rounded-full h-2 mt-3 mx-auto">
+                                                <div class="text-[11px] sm:text-sm text-gray-600 font-medium">Progreso Total</div>
+                                                <div class="w-28 sm:w-20 bg-gray-200 rounded-full h-2 mt-2 sm:mt-3 mx-auto">
                                                     <div 
                                                         class="h-2 rounded-full transition-all duration-1000 ease-out"
                                                         :class="getProjectProgressData(project).barColor"
@@ -409,10 +360,10 @@
                                             <div class="group flex flex-col items-center cursor-pointer transform hover:scale-110 transition-all duration-300">
                                                 <div class="relative">
                                                     <!-- Milestone Circle -->
-                                                    <div :class="getMilestoneStatus(project, 'start').circleClass" class="w-16 h-16 rounded-full flex items-center justify-center shadow-xl border-4 border-white relative overflow-hidden">
+                                                    <div :class="getMilestoneStatus(project, 'start').circleClass" class="w-12 sm:w-16 h-12 sm:h-16 rounded-full flex items-center justify-center shadow-xl border-4 border-white relative overflow-hidden">
                                                         <!-- Animated background for completed milestones -->
                                                         <div v-if="getMilestoneStatus(project, 'start').completed" class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-pulse"></div>
-                                                        <svg class="w-7 h-7 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white relative z-10 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
                                                         </svg>
                                                     </div>
@@ -422,12 +373,12 @@
                                                 </div>
                                                 
                                                 <!-- Milestone Info -->
-                                                <div class="mt-4 text-center group-hover:transform group-hover:scale-105 transition-transform duration-300">
-                                                    <div class="font-bold text-gray-900 text-sm mb-1">Inicio</div>
-                                                    <div class="text-xs text-gray-600 font-medium" v-if="project.start_date">
+                                                <div class="mt-3 text-center group-hover:transform group-hover:scale-105 transition-transform duration-300 text-sm sm:text-base">
+                                                    <div class="font-bold text-gray-900 text-xs sm:text-sm mb-1">Inicio</div>
+                                                    <div class="text-[10px] sm:text-xs text-gray-600 font-medium" v-if="project.start_date">
                                                         {{ formatDate(project.start_date) }}
                                                     </div>
-                                                    <div class="text-xs text-gray-500" v-else>Por definir</div>
+                                                    <div class="text-[10px] sm:text-xs text-gray-500" v-else>Por definir</div>
                                                 </div>
                                                 
                                                 <!-- Tooltip -->
@@ -440,18 +391,18 @@
                                             <!-- Milestone 2: Desarrollo -->
                                             <div class="group flex flex-col items-center cursor-pointer transform hover:scale-110 transition-all duration-300">
                                                 <div class="relative">
-                                                    <div :class="getMilestoneStatus(project, 'development').circleClass" class="w-16 h-16 rounded-full flex items-center justify-center shadow-xl border-4 border-white relative overflow-hidden">
+                                                    <div :class="getMilestoneStatus(project, 'development').circleClass" class="w-12 sm:w-16 h-12 sm:h-16 rounded-full flex items-center justify-center shadow-xl border-4 border-white relative overflow-hidden">
                                                         <div v-if="getMilestoneStatus(project, 'development').completed" class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-pulse"></div>
-                                                        <svg class="w-7 h-7 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white relative z-10 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
                                                         </svg>
                                                     </div>
                                                     <div v-if="getMilestoneStatus(project, 'development').active" class="absolute inset-0 w-16 h-16 rounded-full bg-blue-400 animate-ping opacity-20"></div>
                                                 </div>
                                                 
-                                                <div class="mt-4 text-center group-hover:transform group-hover:scale-105 transition-transform duration-300">
-                                                    <div class="font-bold text-gray-900 text-sm mb-1">Desarrollo</div>
-                                                    <div class="text-xs text-gray-600 font-medium">En progreso</div>
+                                                <div class="mt-3 text-center group-hover:transform group-hover:scale-105 transition-transform duration-300 text-sm sm:text-base">
+                                                    <div class="font-bold text-gray-900 text-xs sm:text-sm mb-1">Desarrollo</div>
+                                                    <div class="text-[10px] sm:text-xs text-gray-600 font-medium">En progreso</div>
                                                 </div>
                                                 
                                                 <div class="invisible group-hover:visible absolute -top-16 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-xl z-10">
@@ -463,18 +414,18 @@
                                             <!-- Milestone 3: Testing -->
                                             <div class="group flex flex-col items-center cursor-pointer transform hover:scale-110 transition-all duration-300">
                                                 <div class="relative">
-                                                    <div :class="getMilestoneStatus(project, 'testing').circleClass" class="w-16 h-16 rounded-full flex items-center justify-center shadow-xl border-4 border-white relative overflow-hidden">
+                                                    <div :class="getMilestoneStatus(project, 'testing').circleClass" class="w-12 sm:w-16 h-12 sm:h-16 rounded-full flex items-center justify-center shadow-xl border-4 border-white relative overflow-hidden">
                                                         <div v-if="getMilestoneStatus(project, 'testing').completed" class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-pulse"></div>
-                                                        <svg class="w-7 h-7 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white relative z-10 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                         </svg>
                                                     </div>
                                                     <div v-if="getMilestoneStatus(project, 'testing').active" class="absolute inset-0 w-16 h-16 rounded-full bg-yellow-400 animate-ping opacity-20"></div>
                                                 </div>
                                                 
-                                                <div class="mt-4 text-center group-hover:transform group-hover:scale-105 transition-transform duration-300">
-                                                    <div class="font-bold text-gray-900 text-sm mb-1">Testing</div>
-                                                    <div class="text-xs text-gray-600 font-medium">Próximamente</div>
+                                                <div class="mt-3 text-center group-hover:transform group-hover:scale-105 transition-transform duration-300 text-sm sm:text-base">
+                                                    <div class="font-bold text-gray-900 text-xs sm:text-sm mb-1">Testing</div>
+                                                    <div class="text-[10px] sm:text-xs text-gray-600 font-medium">Próximamente</div>
                                                 </div>
                                                 
                                                 <div class="invisible group-hover:visible absolute -top-16 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-xl z-10">
@@ -486,21 +437,21 @@
                                             <!-- Milestone 4: Deployment -->
                                             <div class="group flex flex-col items-center cursor-pointer transform hover:scale-110 transition-all duration-300">
                                                 <div class="relative">
-                                                    <div :class="getMilestoneStatus(project, 'deployment').circleClass" class="w-16 h-16 rounded-full flex items-center justify-center shadow-xl border-4 border-white relative overflow-hidden">
+                                                    <div :class="getMilestoneStatus(project, 'deployment').circleClass" class="w-12 sm:w-16 h-12 sm:h-16 rounded-full flex items-center justify-center shadow-xl border-4 border-white relative overflow-hidden">
                                                         <div v-if="getMilestoneStatus(project, 'deployment').completed" class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-pulse"></div>
-                                                        <svg class="w-7 h-7 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white relative z-10 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
                                                         </svg>
                                                     </div>
                                                     <div v-if="getMilestoneStatus(project, 'deployment').active" class="absolute inset-0 w-16 h-16 rounded-full bg-purple-400 animate-ping opacity-20"></div>
                                                 </div>
                                                 
-                                                <div class="mt-4 text-center group-hover:transform group-hover:scale-105 transition-transform duration-300">
-                                                    <div class="font-bold text-gray-900 text-sm mb-1">Despliegue</div>
-                                                    <div class="text-xs text-gray-600 font-medium" v-if="project.end_date">
+                                                <div class="mt-3 text-center group-hover:transform group-hover:scale-105 transition-transform duration-300 text-sm sm:text-base">
+                                                    <div class="font-bold text-gray-900 text-xs sm:text-sm mb-1">Despliegue</div>
+                                                    <div class="text-[10px] sm:text-xs text-gray-600 font-medium" v-if="project.end_date">
                                                         {{ formatDate(project.end_date) }}
                                                     </div>
-                                                    <div class="text-xs text-gray-500" v-else>Planificado</div>
+                                                    <div class="text-[10px] sm:text-xs text-gray-500" v-else>Planificado</div>
                                                 </div>
                                                 
                                                 <div class="invisible group-hover:visible absolute -top-16 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-xl z-10">
@@ -511,50 +462,47 @@
                                         </div>
 
                                         <!-- Timeline Stats Cards -->
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+                                        <!-- En móvil: usar fila horizontal desplazable y reducir iconos/texteado -->
+                                        <div class="mt-10">
+                                            <div class="flex md:grid md:grid-cols-3 gap-6 overflow-x-auto md:overflow-visible -mx-4 px-4 md:mx-0 md:px-0 space-x-4 md:space-x-0">
                                             <!-- Days Elapsed -->
-                                            <div class="bg-white rounded-2xl p-6 shadow-lg border border-indigo-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-lg border border-indigo-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 min-w-[14rem] md:min-w-0">
                                                 <div class="flex items-center">
-                                                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                                        </svg>
+                                                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3 sm:mr-4">
+                                                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                                     </div>
                                                     <div>
-                                                        <div class="text-2xl font-bold text-gray-900">{{ getProjectDays(project).elapsed }}</div>
-                                                        <div class="text-sm text-gray-600 font-medium">Días Transcurridos</div>
+                                                        <div class="text-lg sm:text-2xl font-bold text-gray-900">{{ getProjectDays(project).elapsed }}</div>
+                                                        <div class="text-xs sm:text-sm text-gray-600 font-medium">Días Transcurridos</div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <!-- Days Remaining -->
-                                            <div class="bg-white rounded-2xl p-6 shadow-lg border border-indigo-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-lg border border-indigo-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 min-w-[14rem] md:min-w-0">
                                                 <div class="flex items-center">
-                                                    <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-4">
-                                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                        </svg>
+                                                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-3 sm:mr-4">
+                                                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                     </div>
                                                     <div>
-                                                        <div class="text-2xl font-bold text-gray-900">{{ getProjectDays(project).remaining }}</div>
-                                                        <div class="text-sm text-gray-600 font-medium">Días Restantes</div>
+                                                        <div class="text-lg sm:text-2xl font-bold text-gray-900">{{ getProjectDays(project).remaining }}</div>
+                                                        <div class="text-xs sm:text-sm text-gray-600 font-medium">Días Restantes</div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <!-- Total Duration -->
-                                            <div class="bg-white rounded-2xl p-6 shadow-lg border border-indigo-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-lg border border-indigo-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 min-w-[14rem] md:min-w-0">
                                                 <div class="flex items-center">
-                                                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mr-4">
-                                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                                        </svg>
+                                                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mr-3 sm:mr-4">
+                                                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                                                     </div>
                                                     <div>
-                                                        <div class="text-2xl font-bold text-gray-900">{{ getProjectDays(project).total }}</div>
-                                                        <div class="text-sm text-gray-600 font-medium">Duración Total</div>
+                                                        <div class="text-lg sm:text-2xl font-bold text-gray-900">{{ getProjectDays(project).total }}</div>
+                                                        <div class="text-xs sm:text-sm text-gray-600 font-medium">Duración Total</div>
                                                     </div>
                                                 </div>
+                                            </div>
                                             </div>
                                         </div>
                                     </div>
@@ -570,6 +518,11 @@
 
 <script setup>
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
+// Swiper
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import 'swiper/css'
+import SwiperCore, { Autoplay } from 'swiper'
+SwiperCore.use([Autoplay])
 
 const props = defineProps({
     show: {
@@ -588,6 +541,39 @@ defineEmits(['close'])
 const currentIndex = ref(0)
 const carouselInterval = ref(null)
 const isAutoPlaying = ref(true)
+
+// Action rotation (Ver Proyecto / Código) - when both exist
+const actionIndex = ref(0) // 0 => url, 1 => repo
+const actionInterval = ref(null)
+const ACTION_ROTATE_MS = 3000
+
+const shouldShowAction = (type) => {
+    // if only one exists, always show that one
+    if (type === 'url' && !props.project.url) return false
+    if (type === 'repo' && !props.project.repository) return false
+    // if both exist, decide by actionIndex
+    if (props.project.url && props.project.repository) {
+        return (type === 'url' && actionIndex.value === 0) || (type === 'repo' && actionIndex.value === 1)
+    }
+    // default: show if present
+    return (type === 'url' && !!props.project.url) || (type === 'repo' && !!props.project.repository)
+}
+
+const startActionRotation = () => {
+    stopActionRotation()
+    if (props.project.url && props.project.repository) {
+        actionInterval.value = setInterval(() => {
+            actionIndex.value = (actionIndex.value + 1) % 2
+        }, ACTION_ROTATE_MS)
+    }
+}
+
+const stopActionRotation = () => {
+    if (actionInterval.value) {
+        clearInterval(actionInterval.value)
+        actionInterval.value = null
+    }
+}
 
 // Computed para obtener las 3 tecnologías visibles
 const getVisibleTechs = computed(() => {
@@ -678,19 +664,25 @@ watch(() => props.show, (newValue) => {
         currentIndex.value = 0
         isAutoPlaying.value = true
         startCarousel()
+        // start action rotation when modal opens
+        actionIndex.value = 0
+        startActionRotation()
     } else {
         stopCarousel()
+        stopActionRotation()
     }
 })
 
 onMounted(() => {
     if (props.show) {
         startCarousel()
+        startActionRotation()
     }
 })
 
 onUnmounted(() => {
     stopCarousel()
+    stopActionRotation()
 })
 
 // Helper function to get tech icon classes if not defined in database

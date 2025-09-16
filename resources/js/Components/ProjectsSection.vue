@@ -4,7 +4,7 @@
             <!-- Header -->
             <div class="text-center mb-12">
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Nuestros Proyectos</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Desarrollamos soluciones innovadoras que transforman ideas en realidades digitales.</p>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">stack tecnol</p>
             </div>
 
             <!-- Tabs -->
@@ -48,7 +48,7 @@
                                                 </div>
                                             </div>
                                             <div v-if="proj.features && proj.features.length > 0" class="mb-4"><h4 class="text-sm font-medium text-gray-700 mb-2">Características:</h4><ul class="text-sm text-gray-600 space-y-1"><li v-for="feature in proj.features.slice(0, 3)" :key="feature" class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>{{ feature }}</li></ul></div>
-                                            <div v-if="proj.url || proj.repository" class="flex space-x-3 mt-4"><a v-if="proj.url" :href="proj.url" target="_blank" @click.stop class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200">Ver Proyecto</a><a v-if="proj.repository" :href="proj.repository" target="_blank" @click.stop class="flex-1 bg-gray-800 hover:bg-gray-900 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200">Código</a></div>
+                                            <div v-if="proj.url || proj.repository" class="flex space-x-3 mt-4"><a v-if="proj.url" :href="proj.url" target="_blank" @click.stop class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200">Ver</a><a v-if="proj.repository" :href="proj.repository" target="_blank" @click.stop class="flex-1 bg-gray-800 hover:bg-gray-900 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200">Código</a></div>
                                             <div class="mt-4 text-center"><p class="text-xs text-gray-400 group-hover:text-indigo-500 transition-colors duration-300">Click para ver detalles completos</p></div>
                                         </div>
                                     </div>
