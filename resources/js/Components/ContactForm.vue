@@ -148,8 +148,25 @@ function socialIcon(name) {
 
 function findSocialUrl(name) {
   const key = (name || '').toLowerCase()
-  const s = (contact.socials || []).find(x => (x.name || '').toLowerCase().includes(key))
-  return s ? s.url : '#'
+  const list = contact.socials || []
+  // soporta social como string (url) o como objeto { name, url }
+  for (const item of list) {
+    if (!item) continue
+    if (typeof item === 'string') {
+      if (item.toLowerCase().includes(key) || item.toLowerCase().includes(name)) return item
+      // if string looks like a URL, return it as fallback
+      if (item.startsWith('http')) return item
+      continue
+    }
+    const nm = (item.name || '').toLowerCase()
+    if (nm.includes(key) || nm.includes(name)) return item.url || '#'
+    // if url contains key, accept it
+    if ((item.url || '').toLowerCase().includes(key)) return item.url
+  }
+
+  // debug helper: expose socials content to console if nothing found (remove in production)
+  // console.debug('findSocialUrl: no match for', name, 'in', list)
+  return '#'
 }
 
 async function submit() {

@@ -91,11 +91,21 @@
                     </div>
                     <div>
                         <h4 class="text-lg font-medium mb-4 text-gray-200">Contacto</h4>
-                        <p class="text-gray-300 mb-2">Email: info@laboratorio.com</p>
-                        <p class="text-gray-300 mb-2">Teléfono: +1 (555) 123-4567</p>
-                        <div class="flex space-x-4 mt-4 text-gray-300">
-                            <a href="#" class="hover:text-white transition"><i class="fa-brands fa-twitter fa-lg"></i></a>
-                            <a href="#" class="hover:text-white transition"><i class="fa-brands fa-linkedin fa-lg"></i></a>
+                        <p class="text-gray-300 mb-2">Email: <span class="text-gray-100">{{ contact.emails && contact.emails.length ? contact.emails[0] : 'info@laboratorio.com' }}</span></p>
+                        <p class="text-gray-300 mb-2">Teléfono: <span class="text-gray-100">{{ contact.phones && contact.phones.length ? contact.phones[0] : '+1 (555) 123-4567' }}</span></p>
+                        <div class="mt-6 flex items-center space-x-3">
+                            <!-- Match ContactForm.vue markup: always render the three social anchors, findSocialUrl returns '#' if missing -->
+                            <a :href="findSocialUrl('instagram')" target="_blank" rel="noopener" :aria-label="'Instagram'" class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+
+                            <a :href="findSocialUrl('facebook')" target="_blank" rel="noopener" :aria-label="'Facebook'" class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+
+                            <a :href="findSocialUrl('tiktok')" target="_blank" rel="noopener" :aria-label="'TikTok'" class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -107,11 +117,45 @@
     </div>
 </template>
 
+
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { Link } from '@inertiajs/vue3'
+import useContactSettings from '@/composables/useContactSettings'
 
 const mobileMenuOpen = ref(false)
+
+// Contact info loaded from admin settings
+const contact = reactive({ address: '', phones: [], emails: [], socials: [] })
+const { get } = useContactSettings()
+
+onMounted(async () => {
+    try {
+        const data = await get()
+        contact.address = data.address || ''
+        contact.phones = data.phones || []
+        contact.emails = data.emails || []
+        contact.socials = data.socials || []
+    } catch (e) {
+        // ignore: keep footer default values if fetch fails
+        console.warn('No se pudieron cargar ajustes de contacto:', e)
+    }
+})
+
+// Return an inline SVG string for known social networks (same as ContactForm.vue)
+function socialIcon(name) {
+    const n = (name || '').toLowerCase()
+    if (n.includes('instagram') || n.includes('ig')) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm0 2h10a3 3 0 013 3v10a3 3 0 01-3 3H7a3 3 0 01-3-3V7a3 3 0 013-3z"/></svg>'
+    if (n.includes('facebook') || n.includes('fb')) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3h2V1h-2c-2.757 0-5 2.243-5 5v2H6v3h2v8h3v-8h2.5l.5-3H11V6c0-.552.448-1 1-1z"/></svg>'
+    if (n.includes('linkedin') || n.includes('ln')) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM0 8h5v14H0V8zm7 0h4.7v2h.1c.7-1.3 2.4-2.7 5-2.7 5.3 0 6.3 3.5 6.3 8V22h-5v-7.5c0-1.8 0-4.1-2.5-4.1-2.5 0-2.9 2-2.9 4v7.6H7V8z"/></svg>'
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>'
+}
+
+function findSocialUrl(name) {
+    const key = (name || '').toLowerCase()
+    const s = (contact.socials || []).find(x => (x.name || '').toLowerCase().includes(key))
+    return s ? s.url : '#'
+}
 
 /**
  * Smooth-scroll to an element id and close mobile menu.
