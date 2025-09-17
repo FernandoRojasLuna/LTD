@@ -149,7 +149,7 @@
                 <div class="cta-corporate mx-auto rounded-2xl p-8 md:p-10 text-white shadow-2xl">
                     <div class="cta-inner max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                         <div class="text-left lg:pr-8">
-                            <h3 class="cta-title text-3xl md:text-4xl font-extrabold leading-tight mb-4">¿Listo para transformar tu negocio?</h3>
+                            <h3 class="cta-title text-3xl md:text-4xl font-extrabold leading-tight mb-4">¿Listo para transformar tu negocio o entidad?</h3>
                             <p class="cta-sub text-lg md:text-xl text-indigo-50/90 max-w-2xl">Colaboramos con empresas y gobiernos para acelerar la transformación digital mediante soluciones estratégicas, seguras y medibles.</p>
                         </div>
                         <div class="flex justify-center lg:justify-end">

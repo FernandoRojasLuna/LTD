@@ -1,5 +1,5 @@
 <template>
-  <section class="py-16 bg-cover bg-center" :style="{ backgroundImage: 'url(/storage/fondo3.jpg)' }">
+  <section id="contact" class="py-16 bg-cover bg-center" :style="{ backgroundImage: 'url(/storage/fondo3.jpg)' }">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="bg-white/95 backdrop-blur rounded-lg shadow-lg p-8 lg:p-12">
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
@@ -51,25 +51,25 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="sr-only">Nombre</label>
-                  <input v-model="form.name" placeholder="Nombre" aria-label="Nombre" class="w-full border rounded p-3" required />
+                  <input v-model="form.name" placeholder="Nombre" aria-label="Nombre" class="w-full border border-gray-300 rounded-lg px-4 py-3 transition-shadow duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required />
                 </div>
                 <div>
                   <label class="sr-only">Email</label>
-                  <input v-model="form.email" type="email" placeholder="Email" aria-label="Email" class="w-full border rounded p-3" required />
+                  <input v-model="form.email" type="email" placeholder="Email" aria-label="Email" class="w-full border border-gray-300 rounded-lg px-4 py-3 transition-shadow duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required />
                 </div>
                 <div>
                   <label class="sr-only">Empresa</label>
-                  <input v-model="form.company" placeholder="Empresa (opcional)" class="w-full border rounded p-3" />
+                  <input v-model="form.company" placeholder="Empresa (opcional)" class="w-full border border-gray-300 rounded-lg px-4 py-3 transition-shadow duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
                 </div>
                 <div>
                   <label class="sr-only">Teléfono</label>
-                  <input v-model="form.phone" placeholder="Teléfono (opcional)" class="w-full border rounded p-3" />
+                  <input v-model="form.phone" placeholder="Teléfono (opcional)" class="w-full border border-gray-300 rounded-lg px-4 py-3 transition-shadow duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
                 </div>
               </div>
 
               <div>
                 <label class="sr-only">Tipo de servicio</label>
-                <select v-model="form.service" class="w-full border rounded p-3">
+                <select v-model="form.service" class="w-full border border-gray-300 rounded-lg px-4 py-3 transition-shadow duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                   <option disabled value="">Selecciona un servicio</option>
                   <option>Desarrollo de aplicaciones web y móviles</option>
                   <option>Soluciones de inteligencia artificial y machine learning</option>
@@ -82,14 +82,14 @@
 
               <div>
                 <label class="sr-only">Mensaje</label>
-                <textarea v-model="form.message" placeholder="Escribe aquí tu petición" rows="5" class="w-full border rounded p-3" required></textarea>
+                <textarea v-model="form.message" placeholder="Escribe aquí tu petición" rows="5" class="w-full border border-gray-300 rounded-lg px-4 py-3 transition-shadow duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required></textarea>
               </div>
 
               <!-- honeypot -->
               <input v-model="form.website" type="text" class="hidden" autocomplete="off" tabindex="-1" />
 
               <div class="flex items-center space-x-3">
-                <input id="privacy" type="checkbox" v-model="form.privacy" class="w-4 h-4" required />
+                <input id="privacy" type="checkbox" v-model="form.privacy" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300" required />
                 <label for="privacy" class="text-sm text-gray-700">He leído y acepto la <a href="/privacy" class="text-indigo-600 underline">política de privacidad</a></label>
               </div>
 

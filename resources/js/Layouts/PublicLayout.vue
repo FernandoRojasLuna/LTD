@@ -6,18 +6,26 @@
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
                         <!-- Logo -->
-                        <div class="flex-shrink-0">
-                <h1 class="text-2xl font-semibold text-indigo-600 tracking-tight">LTD</h1>
+                        <div class="flex-shrink-0 flex items-center space-x-3">
+                            <!-- SVG mark -->
+                            <div class="w-10 h-10 bg-indigo-50 rounded-md flex items-center justify-center overflow-hidden">
+                                <!-- Embedded ltd.svg (scaled to fit header) -->
+                                    <img src="/images/ltd.svg" alt="LTD Logo" width="40" height="40" />
+                            </div>
+                            <div class="leading-tight">
+                                <div class="text-xl font-extrabold text-indigo-600">LTD</div>
+                                <div class="text-xs text-gray-500 -mt-0.5">Laboratorio de Transformación Digital</div>
+                            </div>
                         </div>
                         
                         <!-- Navigation Links -->
                         <div class="hidden md:ml-10 md:flex md:space-x-8">
-                            <a href="#home" class="text-gray-900 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Inicio</a>
-                            <a href="#about" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Sobre Nosotros</a>
-                            <a href="#projects" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Proyectos</a>
-                            <a href="#staff" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Equipo</a>
-                            <a href="#clients" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Clientes</a>
-                            <a href="#contact" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Contacto</a>
+                            <button @click.prevent="navigateTo('home')" class="text-gray-900 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Inicio</button>
+                            <button @click.prevent="navigateTo('about')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Sobre Nosotros</button>
+                            <button @click.prevent="navigateTo('projects')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Proyectos</button>
+                            <button @click.prevent="navigateTo('staff')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Equipo</button>
+                            <button @click.prevent="navigateTo('clients')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Clientes</button>
+                            <button @click.prevent="navigateTo('contact')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Contacto</button>
                         </div>
                     </div>
                     
@@ -49,12 +57,12 @@
             <!-- Mobile menu -->
             <div v-show="mobileMenuOpen" class="md:hidden bg-white border-t border-gray-200">
                 <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                    <a href="#home" class="block text-gray-900 hover:text-indigo-600 px-3 py-2 text-base font-medium">Inicio</a>
-                    <a href="#about" class="block text-gray-500 hover:text-indigo-600 px-3 py-2 text-base font-medium">Sobre Nosotros</a>
-                    <a href="#projects" class="block text-gray-500 hover:text-indigo-600 px-3 py-2 text-base font-medium">Proyectos</a>
-                    <a href="#staff" class="block text-gray-500 hover:text-indigo-600 px-3 py-2 text-base font-medium">Equipo</a>
-                    <a href="#clients" class="block text-gray-500 hover:text-indigo-600 px-3 py-2 text-base font-medium">Clientes</a>
-                    <a href="#contact" class="block text-gray-500 hover:text-indigo-600 px-3 py-2 text-base font-medium">Contacto</a>
+                    <button @click.prevent="navigateTo('home')" class="w-full text-left block text-gray-900 hover:text-indigo-600 px-3 py-2 text-base font-medium">Inicio</button>
+                    <button @click.prevent="navigateTo('about')" class="w-full text-left block text-gray-500 hover:text-indigo-600 px-3 py-2 text-base font-medium">Sobre Nosotros</button>
+                    <button @click.prevent="navigateTo('projects')" class="w-full text-left block text-gray-500 hover:text-indigo-600 px-3 py-2 text-base font-medium">Proyectos</button>
+                    <button @click.prevent="navigateTo('staff')" class="w-full text-left block text-gray-500 hover:text-indigo-600 px-3 py-2 text-base font-medium">Equipo</button>
+                    <button @click.prevent="navigateTo('clients')" class="w-full text-left block text-gray-500 hover:text-indigo-600 px-3 py-2 text-base font-medium">Clientes</button>
+                    <button @click.prevent="navigateTo('contact')" class="w-full text-left block text-gray-500 hover:text-indigo-600 px-3 py-2 text-base font-medium">Contacto</button>
                 </div>
             </div>
         </nav>
@@ -75,10 +83,10 @@
                     <div>
                         <h4 class="text-lg font-medium mb-4 text-gray-200">Enlaces</h4>
                         <ul class="space-y-2">
-                            <li><a href="#about" class="text-gray-300 hover:text-white">Sobre Nosotros</a></li>
-                            <li><a href="#projects" class="text-gray-300 hover:text-white">Proyectos</a></li>
-                            <li><a href="#staff" class="text-gray-300 hover:text-white">Equipo</a></li>
-                            <li><a href="#contact" class="text-gray-300 hover:text-white">Contacto</a></li>
+                            <li><button @click.prevent="navigateTo('about')" class="text-gray-300 hover:text-white">Sobre Nosotros</button></li>
+                            <li><button @click.prevent="navigateTo('projects')" class="text-gray-300 hover:text-white">Proyectos</button></li>
+                            <li><button @click.prevent="navigateTo('staff')" class="text-gray-300 hover:text-white">Equipo</button></li>
+                            <li><button @click.prevent="navigateTo('contact')" class="text-gray-300 hover:text-white">Contacto</button></li>
                         </ul>
                     </div>
                     <div>
@@ -104,4 +112,25 @@ import { ref } from 'vue'
 import { Link } from '@inertiajs/vue3'
 
 const mobileMenuOpen = ref(false)
+
+/**
+ * Smooth-scroll to an element id and close mobile menu.
+ * If the element is not on the page, fallback to setting the hash (navigates to current route with hash).
+ */
+function navigateTo(id) {
+    const el = document.getElementById(id)
+    const header = document.querySelector('nav')
+    const headerOffset = header ? header.offsetHeight : 64
+
+    if (el) {
+        const top = el.getBoundingClientRect().top + window.pageYOffset - headerOffset - 12
+        window.scrollTo({ top, behavior: 'smooth' })
+        mobileMenuOpen.value = false
+    } else {
+        // Fallback: set the URL hash so the browser navigates to the section if present on the page
+        mobileMenuOpen.value = false
+        const base = window.location.href.split('#')[0]
+        window.location.href = `${base}#${id}`
+    }
+}
 </script>
