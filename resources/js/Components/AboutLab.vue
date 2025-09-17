@@ -146,7 +146,7 @@
 
             <!-- Call to Action (corporate redesign) -->
             <div class="text-center">
-                <div class="cta-corporate mx-auto rounded-2xl p-12 text-white shadow-2xl">
+                <div class="cta-corporate mx-auto rounded-2xl p-8 md:p-10 text-white shadow-2xl">
                     <div class="cta-inner max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                         <div class="text-left lg:pr-8">
                             <h3 class="cta-title text-3xl md:text-4xl font-extrabold leading-tight mb-4">¿Listo para transformar tu negocio?</h3>
@@ -164,8 +164,8 @@
                     </div>
 
                     <!-- Trust logos / proof (carousel: large, circular, full-color logos) -->
-                    <div class="trust-row mt-6 md:mt-10 border-t border-white/10 pt-4 md:pt-8">
-                        <div class="flex items-center justify-center gap-3 md:gap-6 mb-3 md:mb-6">
+                    <div class="trust-row mt-4 md:mt-6 border-t border-white/10 pt-3 md:pt-6">
+                        <div class="flex items-center justify-center gap-3 md:gap-6 mb-2 md:mb-4">
                             <span class="trust-text text-sm text-indigo-100/70">Confiado por</span>
                         </div>
 
@@ -180,7 +180,7 @@
                                     >
                                         <SwiperSlide v-for="(logo, i) in trustLogos" :key="`logo-${i}-${logo}`" class="trust-item flex items-center justify-center">
                                             <div class="trust-logo-circle">
-                                                <img :src="getStorageUrl(logo)" @error="onTrustImgError($event)" :alt="logo" class="trust-logo-img" loading="lazy" />
+                                                <img :src="getStorageUrl(logo)" @error="onTrustImgError($event)" :alt="logo" class="trust-logo-img w-28 h-28 md:w-32 md:h-32" loading="lazy" />
                                             </div>
                                         </SwiperSlide>
                                     </Swiper>
@@ -189,7 +189,7 @@
                                     <div class="trust-grid grid grid-cols-3 gap-8 justify-center items-center w-full md:max-w-4xl mx-auto">
                                         <div v-for="(logo, i) in trustLogos" :key="`g-${i}-${logo}`" class="trust-item flex items-center justify-center">
                                             <div class="trust-logo-circle">
-                                                <img :src="getStorageUrl(logo)" @error="onTrustImgError($event)" :alt="logo" class="trust-logo-img" loading="lazy" />
+                                                <img :src="getStorageUrl(logo)" @error="onTrustImgError($event)" :alt="logo" class="trust-logo-img w-28 h-28 md:w-32 md:h-32" loading="lazy" />
                                             </div>
                                         </div>
                                     </div>
@@ -726,6 +726,7 @@ const trustLogos = ref([
     'logoGore.jpg',
     'muniLima.jpg',
     'muni.jpg'
+    
 ])
 
 const showCarousel = computed(() => {
