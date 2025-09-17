@@ -47,26 +47,58 @@
                     </div>
 
             </div>
-            <!-- Modal: staff details -->
-            <div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 overflow-auto">
-                    <div class="flex justify-between items-center p-4 border-b">
-                        <h3 id="modal-title" class="text-lg font-semibold">{{ modalMember?.name }}</h3>
-                        <button id="modal-close-btn" @click="closeModal" class="text-gray-600 hover:text-gray-900 px-3 py-1 rounded focus:outline-none">Cerrar</button>
-                    </div>
-                    <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="col-span-1">
-                            <img :src="imageUrl(modalMember?.image)" :alt="modalMember?.name" class="w-full h-64 object-cover rounded-lg" />
+            <!-- Modal: staff details (corporate, responsive, uses only real fields) -->
+            <div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                <div class="bg-white rounded-lg shadow-2xl max-w-3xl w-full mx-2 overflow-hidden" style="max-height:90vh;">
+                    <!-- Header -->
+                    <div class="relative border-b bg-white">
+                        <div class="px-6 py-4">
+                            <h3 id="modal-title" class="text-2xl font-semibold text-gray-900">{{ modalMember?.name }}</h3>
+                            <p class="text-sm text-gray-500 mt-1">{{ modalMember?.position }}</p>
                         </div>
-                        <div class="md:col-span-2">
-                            <p class="text-sm text-gray-500">{{ modalMember?.position }}</p>
-                            <p class="mt-4 text-gray-700">{{ modalMember?.bio }}</p>
-                            <div class="mt-4 flex items-center gap-3">
-                                <a v-if="modalMember?.linkedin" :href="modalMember.linkedin" target="_blank" class="text-indigo-600">LinkedIn</a>
-                                <a v-if="modalMember?.github" :href="modalMember.github" target="_blank" class="text-gray-800">GitHub</a>
-                                <a v-if="modalMember?.email" :href="`mailto:${modalMember.email}`" class="text-gray-500">Email</a>
+                        <button id="modal-close-btn" @click="closeModal" class="absolute right-4 top-4 text-gray-600 hover:text-gray-900 focus:outline-none" aria-label="Cerrar modal">Cerrar</button>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="p-6 overflow-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                            <div class="md:col-span-1">
+                                <div class="rounded-lg overflow-hidden bg-gray-50 p-3">
+                                    <img :src="imageUrl(modalMember?.image)" :alt="modalMember?.name" class="w-full h-64 object-cover rounded-md shadow-sm" />
+                                </div>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <p class="text-sm text-gray-500">Perfil</p>
+                                <p class="mt-4 text-gray-700 leading-relaxed">{{ modalMember?.bio || 'Información no disponible.' }}</p>
+
+                                <div class="mt-6 flex flex-wrap items-center gap-3">
+                                    <a v-if="modalMember?.linkedin" :href="modalMember.linkedin" target="_blank" class="inline-flex items-center gap-2 text-indigo-600 hover:underline">
+                                        <!-- simple LinkedIn icon -->
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.5 8h4V24h-4zM8.5 8h3.78v2.2h.05c.53-1 1.83-2.2 3.77-2.2 4.03 0 4.78 2.66 4.78 6.12V24h-4v-7.2c0-1.72-.03-3.94-2.4-3.94-2.4 0-2.77 1.88-2.77 3.81V24h-4V8z"/></svg>
+                                        LinkedIn
+                                    </a>
+
+                                    <a v-if="modalMember?.github" :href="modalMember.github" target="_blank" class="inline-flex items-center gap-2 text-gray-800 hover:underline">
+                                        <!-- simple GitHub icon -->
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.37.5 0 5.87 0 12.49c0 5.28 3.44 9.75 8.21 11.33.6.11.82-.26.82-.58 0-.29-.01-1.05-.01-2.07-3.34.73-4.04-1.61-4.04-1.61-.55-1.4-1.34-1.78-1.34-1.78-1.09-.75.08-.74.08-.74 1.2.08 1.83 1.23 1.83 1.23 1.07 1.83 2.8 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.92 0-1.31.47-2.38 1.23-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.45 11.45 0 013.01-.41c1.02.01 2.05.14 3.01.41 2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.6-2.8 5.61-5.47 5.91.43.37.81 1.1.81 2.22 0 1.6-.01 2.89-.01 3.29 0 .32.21.69.82.57C20.56 22.23 24 17.76 24 12.49 24 5.87 18.63.5 12 .5z"/></svg>
+                                        GitHub
+                                    </a>
+
+                                    <a v-if="modalMember?.email" :href="`mailto:${modalMember.email}`" class="inline-flex items-center gap-2 text-gray-600 hover:underline">
+                                        <!-- simple mail icon -->
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1.5 4.5h21v15h-21v-15zm19.5-1.5h-18c-.83 0-1.5.67-1.5 1.5v15c0 .83.67 1.5 1.5 1.5h18c.83 0 1.5-.67 1.5-1.5v-15c0-.83-.67-1.5-1.5-1.5zm-9 9.75l-7.5-4.5v-.75l7.5 4.5 7.5-4.5v.75l-7.5 4.5z"/></svg>
+                                        Email
+                                    </a>
+                                </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-3">
+                        <button @click="closeModal" class="px-4 py-2 rounded-md bg-white border text-gray-700 hover:bg-gray-50">Cerrar</button>
+                        <a v-if="modalMember?.linkedin" :href="modalMember.linkedin" target="_blank" class="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Ver perfil</a>
                     </div>
                 </div>
             </div>
