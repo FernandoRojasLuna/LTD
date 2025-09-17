@@ -4,7 +4,7 @@
             <!-- Header -->
             <div class="text-center mb-12">
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Nuestros Proyectos</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">stack tecnol</p>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Cada proyecto es una apuesta por la innovación, el desarrollo sostenible y la transformación digital real.</p>
             </div>
 
             <!-- Tabs -->

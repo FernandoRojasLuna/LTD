@@ -2,57 +2,57 @@
     <div class="min-h-screen bg-gray-50">
     <!-- Navigation -->
     <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <!-- Logo -->
-                        <div class="flex-shrink-0 flex items-center space-x-3">
-                            <!-- SVG mark -->
-                            <div class="w-10 h-10 bg-indigo-50 rounded-md flex items-center justify-center overflow-hidden">
-                                <!-- Embedded ltd.svg (scaled to fit header) -->
-                                    <img src="/images/ltd.svg" alt="LTD Logo" width="40" height="40" />
-                            </div>
-                            <div class="leading-tight">
-                                <div class="text-xl font-extrabold text-indigo-600">LTD</div>
-                                <div class="text-xs text-gray-500 -mt-0.5">Laboratorio de Transformación Digital</div>
-                            </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Left: logo -->
+                <div class="flex items-center">
+                    <Link href="/" class="flex items-center space-x-3 no-underline">
+                        <img src="/images/ltd.svg" alt="LTD Logo" class="w-9 h-9 object-contain" />
+                        <div class="leading-tight">
+                            <div class="text-2xl md:text-3xl font-extrabold tracking-tight md:tracking-tighter text-black uppercase font-display drop-shadow-sm">LTD</div>
                         </div>
-                        
-                        <!-- Navigation Links -->
-                        <div class="hidden md:ml-10 md:flex md:space-x-8">
-                            <button @click.prevent="navigateTo('home')" class="text-gray-900 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Inicio</button>
-                            <button @click.prevent="navigateTo('about')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Sobre Nosotros</button>
-                            <button @click.prevent="navigateTo('projects')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Proyectos</button>
-                            <button @click.prevent="navigateTo('staff')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Equipo</button>
-                            <button @click.prevent="navigateTo('clients')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Clientes</button>
-                            <button @click.prevent="navigateTo('contact')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Contacto</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Auth Links -->
-                    <div class="hidden md:flex md:items-center md:space-x-4">
+                    </Link>
+                </div>
+
+                <!-- Right: nav links + auth (desktop) -->
+                <div class="hidden md:flex md:items-center md:space-x-6">
+                    <nav class="flex space-x-6">
+                        <button @click.prevent="navigateTo('home')" class="relative text-gray-900 hover:text-indigo-600 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Inicio</button>
+                        <button @click.prevent="navigateTo('about')" class="relative text-gray-500 hover:text-indigo-600 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Sobre Nosotros</button>
+                        <button @click.prevent="navigateTo('projects')" class="relative text-gray-500 hover:text-indigo-600 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Proyectos</button>
+                        <button @click.prevent="navigateTo('staff')" class="relative text-gray-500 hover:text-indigo-600 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Equipo</button>
+                        <button @click.prevent="navigateTo('clients')" class="relative text-gray-500 hover:text-indigo-600 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Clientes</button>
+                        <button @click.prevent="navigateTo('contact')" class="relative text-gray-500 hover:text-indigo-600 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Contacto</button>
+                    </nav>
+
+                    <div class="flex items-center md:space-x-4">
                         <template v-if="$page.props.auth.user">
-                            <Link :href="route('dashboard')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">
-                                Dashboard
+                            <!-- Dashboard icon link -->
+                            <Link :href="route('dashboard')" title="Dashboard" aria-label="Dashboard" class="text-gray-500 hover:text-indigo-600 px-3 py-2">
+                                <i class="fa-solid fa-user"></i>
                             </Link>
+
+                            
                         </template>
                         <template v-else>
-                            <Link :href="route('login')" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">
-                                Admin
+                            <!-- Login icon link -->
+                            <Link :href="route('login')" title="Iniciar sesión" aria-label="Iniciar sesión" class="text-gray-500 hover:text-indigo-600 px-3 py-2">
+                                <i class="fa-solid fa-right-to-bracket"></i>
                             </Link>
                         </template>
                     </div>
-                    
-                    <!-- Mobile menu button -->
-                    <div class="md:hidden flex items-center">
-                        <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-500 hover:text-gray-700 p-2">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-                    </div>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-500 hover:text-gray-700 p-2">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
                 </div>
             </div>
+        </div>
             
             <!-- Mobile menu -->
             <div v-show="mobileMenuOpen" class="md:hidden bg-white border-t border-gray-200">
@@ -74,44 +74,42 @@
         
         <!-- Footer -->
         <footer class="bg-gray-900 text-white">
-            <div class="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div>
-                        <h3 class="text-2xl font-semibold mb-4">Laboratorio de Transformación Digital</h3>
-                        <p class="text-gray-400">Innovación y tecnología para el futuro. Transformamos ideas en soluciones digitales.</p>
+            <div class="max-w-5xl mx-auto py-8 px-4 sm:py-10 sm:px-6 lg:px-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start">
+                    <div class="md:col-span-1">
+                        <h3 class="text-xl font-semibold mb-2 sm:text-left text-center">Laboratorio de Transformación Digital</h3>
+                        <p class="text-gray-400 text-sm sm:text-left text-center">Innovación y tecnología para el futuro. Transformamos ideas en soluciones digitales.</p>
                     </div>
-                    <div>
-                        <h4 class="text-lg font-medium mb-4 text-gray-200">Enlaces</h4>
-                        <ul class="space-y-2">
+                    <div class="md:col-span-1">
+                        <h4 class="text-sm font-medium mb-2 text-gray-200 sm:text-left text-center">Enlaces</h4>
+                        <ul class="space-y-1 text-sm text-center sm:text-left">
                             <li><button @click.prevent="navigateTo('about')" class="text-gray-300 hover:text-white">Sobre Nosotros</button></li>
                             <li><button @click.prevent="navigateTo('projects')" class="text-gray-300 hover:text-white">Proyectos</button></li>
                             <li><button @click.prevent="navigateTo('staff')" class="text-gray-300 hover:text-white">Equipo</button></li>
                             <li><button @click.prevent="navigateTo('contact')" class="text-gray-300 hover:text-white">Contacto</button></li>
                         </ul>
                     </div>
-                    <div>
-                        <h4 class="text-lg font-medium mb-4 text-gray-200">Contacto</h4>
-                        <p class="text-gray-300 mb-2">Email: <span class="text-gray-100">{{ contact.emails && contact.emails.length ? contact.emails[0] : 'info@laboratorio.com' }}</span></p>
-                        <p class="text-gray-300 mb-2">Teléfono: <span class="text-gray-100">{{ contact.phones && contact.phones.length ? contact.phones[0] : '+1 (555) 123-4567' }}</span></p>
-                        <div class="mt-6 flex items-center space-x-3">
-                            <!-- Match ContactForm.vue markup: always render the three social anchors, findSocialUrl returns '#' if missing -->
-                            <a :href="findSocialUrl('instagram')" target="_blank" rel="noopener" :aria-label="'Instagram'" class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
-                                <i class="fa-brands fa-instagram"></i>
+                    <div class="md:col-span-1">
+                        <h4 class="text-sm font-medium mb-2 text-gray-200 sm:text-left text-center">Contacto</h4>
+                        <p class="text-gray-300 mb-1 text-sm text-center sm:text-left">Email: <span class="text-gray-100">{{ contact.emails && contact.emails.length ? contact.emails[0] : 'info@laboratorio.com' }}</span></p>
+                        <p class="text-gray-300 mb-1 text-sm text-center sm:text-left">Teléfono: <span class="text-gray-100">{{ contact.phones && contact.phones.length ? contact.phones[0] : '+1 (555) 123-4567' }}</span></p>
+                        <div class="mt-4 flex items-center justify-center sm:justify-start space-x-2">
+                            <!-- Compact social anchors: smaller, tighter spacing -->
+                            <a :href="findSocialUrl('instagram')" target="_blank" rel="noopener" :aria-label="'Instagram'" class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
+                                <i class="fa-brands fa-instagram text-sm"></i>
                             </a>
 
-                            <a :href="findSocialUrl('facebook')" target="_blank" rel="noopener" :aria-label="'Facebook'" class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
-                                <i class="fa-brands fa-facebook-f"></i>
+                            <a :href="findSocialUrl('facebook')" target="_blank" rel="noopener" :aria-label="'Facebook'" class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
+                                <i class="fa-brands fa-facebook-f text-sm"></i>
                             </a>
 
-                            <a :href="findSocialUrl('tiktok')" target="_blank" rel="noopener" :aria-label="'TikTok'" class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
-                                <i class="fa-brands fa-tiktok"></i>
+                            <a :href="findSocialUrl('tiktok')" target="_blank" rel="noopener" :aria-label="'TikTok'" class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
+                                <i class="fa-brands fa-tiktok text-sm"></i>
                             </a>
                         </div>
                     </div>
                 </div>
-                <div class="mt-10 pt-8 border-t border-gray-800 text-center">
-                    <p class="text-gray-400">&copy; 2025 Laboratorio de Transformación Digital. Todos los derechos reservados.</p>
-                </div>
+
             </div>
         </footer>
     </div>

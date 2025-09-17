@@ -1,11 +1,18 @@
 <template>
   <section id="clients" class="py-16 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between mb-8">
-        <h2 class="text-3xl font-bold text-gray-900">Nuestros Clientes</h2>
-        <div class="hidden md:flex space-x-2">
-          <button @click="prev" class="p-2 rounded-md bg-white shadow">‹</button>
-          <button @click="next" class="p-2 rounded-md bg-white shadow">›</button>
+      <div class="relative mb-10">
+        <div class="text-center">
+          <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">Nuestros Clientes</h2>
+          <p class="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">Aliados estratégicos que confían en nuestra visión tecnológica para convertir sus desafíos en soluciones digitales</p>
+        </div>
+
+        <!-- Navigation arrows: absolute to the top-right so title stays perfectly centered -->
+        <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+          <div class="hidden md:flex items-center space-x-2">
+            <button @click="prev" class="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-700 hover:bg-indigo-50">‹</button>
+            <button @click="next" class="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-700 hover:bg-indigo-50">›</button>
+          </div>
         </div>
       </div>
 

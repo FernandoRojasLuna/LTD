@@ -20,7 +20,7 @@
             <!-- Services/Technologies Grid -->
             <div v-if="contents.length > 0" class="mb-16">
                     <div class="text-center mb-12">
-                        <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Nuestras Especialidades</h3>
+                        <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4"></h3>
                         <p class="text-xl text-gray-600 max-w-3xl mx-auto">Ofrecemos soluciones integrales en transformación digital, combinando innovación y experiencia.</p>
                     </div>
 

@@ -2,8 +2,8 @@
   <section class="mt-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-6">
-        <h3 class="text-2xl font-bold text-gray-900">Tecnologías que usamos</h3>
-        <p class="text-sm text-gray-600">Herramientas y librerías que impulsan nuestros proyectos</p>
+        <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Tecnologías que usamos</h3>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">Herramientas y librerías que impulsan nuestros proyectos</p>
       </div>
 
       <div v-if="loading" class="flex justify-center py-8">

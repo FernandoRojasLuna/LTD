@@ -12,7 +12,7 @@
               <ul class="list-disc pl-5">
                 <li>Desarrollo de plataformas a medida</li>
                 <li>Transformación y consultoría digital</li>
-                <li>Investigación, prototipado y PoC (I+D)</li>
+                <li>Investigación y prototipado</li>
               </ul>
             </div>
 
