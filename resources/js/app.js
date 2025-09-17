@@ -1,5 +1,7 @@
 import './bootstrap';
 import '../css/app.css';
+// Import Font Awesome locally (requires npm install @fortawesome/fontawesome-free)
+import '@fortawesome/fontawesome-free/css/all.css';
 
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
@@ -7,6 +9,15 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+// Inject Font Awesome CDN stylesheet so brand icons are available without an npm package
+if (typeof document !== 'undefined') {
+    const fa = document.createElement('link')
+    fa.rel = 'stylesheet'
+    fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+    fa.crossOrigin = 'anonymous'
+    document.head.appendChild(fa)
+}
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,

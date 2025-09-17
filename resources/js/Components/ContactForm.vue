@@ -1,8 +1,8 @@
 <template>
-  <section class="py-16 bg-cover bg-center" :style="{ backgroundImage: 'url(/images/contact-hero.jpg)' }">
+  <section class="py-16 bg-cover bg-center" :style="{ backgroundImage: 'url(/storage/fondo3.jpg)' }">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="bg-white/95 backdrop-blur rounded-lg shadow-lg p-8 lg:p-12">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
           <div class="pr-6">
             <h2 class="text-4xl font-extrabold text-gray-900 mb-4">¿En qué podemos colaborar?</h2>
             <p class="text-gray-600 mb-6">Somos especialistas en Desarrollo de Software, Consultoría Digital, Automatización de Procesos y mucho más. Cuéntanos tu reto y te propondremos una solución técnica, estratégica y medible.</p>
@@ -23,73 +23,89 @@
             </div>
 
             <div class="mt-6 flex items-center space-x-3">
-              <template v-for="(s, i) in (contact.socials || [])" :key="i">
-                <a :href="s.url" target="_blank" rel="noopener" class="text-gray-600 hover:text-indigo-600 flex items-center space-x-2">
-                  <span v-html="socialIcon(s.name)" class="w-6 h-6"></span>
-                  <span class="text-sm">{{ s.name }}</span>
-                </a>
-              </template>
+              <!-- Instagram -->
+              <a :href="findSocialUrl('instagram')" target="_blank" rel="noopener" :aria-label="'Instagram'" class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
+                <i class="fa-brands fa-instagram"></i>
+              </a>
+
+              <!-- Facebook -->
+              <a :href="findSocialUrl('facebook')" target="_blank" rel="noopener" :aria-label="'Facebook'" class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
+                <i class="fa-brands fa-facebook-f"></i>
+              </a>
+
+              <!-- TikTok -->
+              <a :href="findSocialUrl('tiktok')" target="_blank" rel="noopener" :aria-label="'TikTok'" class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
+                <i class="fa-brands fa-tiktok"></i>
+              </a>
             </div>
           </div>
 
-          <form @submit.prevent="submit" class="space-y-4 bg-white p-6 rounded" novalidate>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form @submit.prevent="submit" class="relative rounded overflow-hidden" novalidate>
+            <!-- background image (fills the right panel) -->
+            <div class="absolute inset-0 bg-cover bg-center" :style="{ backgroundImage: 'url(/storage/fondo3.jpg)' }"></div>
+            <!-- dark overlay for contrast (reduced opacity) -->
+            <div class="absolute inset-0 bg-black/20"></div>
+
+            <!-- form content sits above the background (lighter white overlay) -->
+            <div class="relative p-6 md:p-8 space-y-4 bg-white/70 backdrop-blur-sm">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="sr-only">Nombre</label>
+                  <input v-model="form.name" placeholder="Nombre" aria-label="Nombre" class="w-full border rounded p-3" required />
+                </div>
+                <div>
+                  <label class="sr-only">Email</label>
+                  <input v-model="form.email" type="email" placeholder="Email" aria-label="Email" class="w-full border rounded p-3" required />
+                </div>
+                <div>
+                  <label class="sr-only">Empresa</label>
+                  <input v-model="form.company" placeholder="Empresa (opcional)" class="w-full border rounded p-3" />
+                </div>
+                <div>
+                  <label class="sr-only">Teléfono</label>
+                  <input v-model="form.phone" placeholder="Teléfono (opcional)" class="w-full border rounded p-3" />
+                </div>
+              </div>
+
               <div>
-                <label class="sr-only">Nombre</label>
-                <input v-model="form.name" placeholder="Nombre" aria-label="Nombre" class="w-full border rounded p-3" required />
+                <label class="sr-only">Tipo de servicio</label>
+                <select v-model="form.service" class="w-full border rounded p-3">
+                  <option disabled value="">Selecciona un servicio</option>
+                  <option>Desarrollo de aplicaciones web y móviles</option>
+                  <option>Soluciones de inteligencia artificial y machine learning</option>
+                  <option>Automatización de procesos empresariales</option>
+                  <option>Consultoría en transformación digital</option>
+                  <option>Investigación y desarrollo tecnológico</option>
+                  <option>Otro</option>
+                </select>
               </div>
+
               <div>
-                <label class="sr-only">Email</label>
-                <input v-model="form.email" type="email" placeholder="Email" aria-label="Email" class="w-full border rounded p-3" required />
+                <label class="sr-only">Mensaje</label>
+                <textarea v-model="form.message" placeholder="Escribe aquí tu petición" rows="5" class="w-full border rounded p-3" required></textarea>
               </div>
-              <div>
-                <label class="sr-only">Empresa</label>
-                <input v-model="form.company" placeholder="Empresa (opcional)" class="w-full border rounded p-3" />
+
+              <!-- honeypot -->
+              <input v-model="form.website" type="text" class="hidden" autocomplete="off" tabindex="-1" />
+
+              <div class="flex items-center space-x-3">
+                <input id="privacy" type="checkbox" v-model="form.privacy" class="w-4 h-4" required />
+                <label for="privacy" class="text-sm text-gray-700">He leído y acepto la <a href="/privacy" class="text-indigo-600 underline">política de privacidad</a></label>
               </div>
-              <div>
-                <label class="sr-only">Teléfono</label>
-                <input v-model="form.phone" placeholder="Teléfono (opcional)" class="w-full border rounded p-3" />
+
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="text-sm text-green-600" v-if="success">{{ success }}</div>
+                  <div class="text-sm text-red-600" v-if="error">{{ error }}</div>
+                </div>
+                <button :disabled="loading" type="submit" class="ml-4 inline-flex items-center gap-3 px-6 py-3 bg-indigo-600 text-white font-semibold rounded shadow">
+                  <svg v-if="loading" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                  {{ loading ? 'Enviando...' : 'ENVIAR' }}
+                </button>
               </div>
-            </div>
-
-            <div>
-              <label class="sr-only">Tipo de servicio</label>
-              <select v-model="form.service" class="w-full border rounded p-3">
-                <option disabled value="">Selecciona un servicio</option>
-                <option>Desarrollo de aplicaciones web y móviles</option>
-                <option>Soluciones de inteligencia artificial y machine learning</option>
-                <option>Automatización de procesos empresariales</option>
-                <option>Consultoría en transformación digital</option>
-                <option>Investigación y desarrollo tecnológico</option>
-                <option>Otro</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="sr-only">Mensaje</label>
-              <textarea v-model="form.message" placeholder="Escribe aquí tu petición" rows="5" class="w-full border rounded p-3" required></textarea>
-            </div>
-
-            <!-- honeypot -->
-            <input v-model="form.website" type="text" class="hidden" autocomplete="off" tabindex="-1" />
-
-            <div class="flex items-center space-x-3">
-              <input id="privacy" type="checkbox" v-model="form.privacy" class="w-4 h-4" required />
-              <label for="privacy" class="text-sm text-gray-600">He leído y acepto la <a href="/privacy" class="text-indigo-600 underline">política de privacidad</a></label>
-            </div>
-
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="text-sm text-green-600" v-if="success">{{ success }}</div>
-                <div class="text-sm text-red-600" v-if="error">{{ error }}</div>
-              </div>
-              <button :disabled="loading" type="submit" class="ml-4 inline-flex items-center gap-3 px-6 py-3 bg-indigo-600 text-white font-semibold rounded shadow">
-                <svg v-if="loading" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                </svg>
-                {{ loading ? 'Enviando...' : 'ENVIAR' }}
-              </button>
             </div>
           </form>
         </div>
@@ -128,6 +144,12 @@ function socialIcon(name) {
   if (n.includes('facebook') || n.includes('fb')) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3h2V1h-2c-2.757 0-5 2.243-5 5v2H6v3h2v8h3v-8h2.5l.5-3H11V6c0-.552.448-1 1-1z"/></svg>'
   if (n.includes('linkedin') || n.includes('ln')) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM0 8h5v14H0V8zm7 0h4.7v2h.1c.7-1.3 2.4-2.7 5-2.7 5.3 0 6.3 3.5 6.3 8V22h-5v-7.5c0-1.8 0-4.1-2.5-4.1-2.5 0-2.9 2-2.9 4v7.6H7V8z"/></svg>'
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>'
+}
+
+function findSocialUrl(name) {
+  const key = (name || '').toLowerCase()
+  const s = (contact.socials || []).find(x => (x.name || '').toLowerCase().includes(key))
+  return s ? s.url : '#'
 }
 
 async function submit() {

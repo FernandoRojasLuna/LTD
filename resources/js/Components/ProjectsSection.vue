@@ -122,15 +122,6 @@
                 <h3 class="text-lg font-medium text-gray-900 mb-2">No hay proyectos</h3>
                 <p class="text-gray-600">No se encontraron proyectos para esta categoría.</p>
             </div>
-
-            <!-- CTA -->
-            <div class="text-center mt-12">
-                <div class="bg-white rounded-lg p-8 shadow-sm">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">¿Tienes un proyecto en mente?</h3>
-                    <p class="text-xl text-gray-600 mb-6">Trabajemos juntos para convertir tu idea en realidad digital.</p>
-                    <a href="#contact" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 transform hover:scale-105">Iniciar Proyecto</a>
-                </div>
-            </div>
         </div>
 
     <!-- Modal (render only when project selected) -->
