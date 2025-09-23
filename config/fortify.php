@@ -144,7 +144,8 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Features::registration(), // 🚫 desactivamos el registro de Fortify
+
         Features::resetPasswords(),
         // Features::emailVerification(),
         Features::updateProfileInformation(),

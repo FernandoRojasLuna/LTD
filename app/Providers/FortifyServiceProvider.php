@@ -14,6 +14,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
+use Inertia\Inertia;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -35,11 +36,7 @@ class FortifyServiceProvider extends ServiceProvider
          * Esto se ejecuta DESPUÉS de que Fortify registre sus rutas,
          * para sobrescribirla con un abort(404)
          */
-        $this->app->booted(function () {
-            Route::match(['get', 'post'], '/register', function () {
-                abort(404);
-            })->name('register.bloqueada');
-        });
+        
 
         /**
          * ⚙️ Configuración de Fortify
@@ -63,5 +60,9 @@ class FortifyServiceProvider extends ServiceProvider
         RateLimiter::for('two-factor', function (Request $request) {
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
         });
+
+        \Laravel\Fortify\Fortify::registerView(function () {
+        return Inertia::render('Auth/Register');
+    });
     }
 }
