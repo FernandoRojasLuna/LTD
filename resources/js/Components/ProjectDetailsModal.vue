@@ -235,8 +235,11 @@
                                                     <div v-if="!tech.icon && !getTechIcon(tech.name)" class="w-8 h-8 rounded-lg flex items-center justify-center text-xl font-bold" :style="{ backgroundColor: tech.color, color: 'white' }">
                                                         {{ tech.name.charAt(0) }}
                                                     </div>
-                                                    <!-- Font icon if available (priority to database icon) -->
-                                                    <i v-else :class="tech.icon || getTechIcon(tech.name)" :style="{ color: tech.color }" class="text-3xl"></i>
+                                                    <!-- If tech.icon is an image path or URL render it; otherwise treat as icon class -->
+                                                    <template v-else>
+                                                        <img v-if="tech.icon && isImageUrl(tech.icon)" :src="resolveTechIcon(tech.icon)" :alt="tech.name + ' icon'" class="tech-icon-img rounded-lg" />
+                                                        <i v-else :class="tech.icon || getTechIcon(tech.name)" :style="{ color: tech.color }" class="text-3xl"></i>
+                                                    </template>
                                                 </div>
                                                 
                                                 <!-- Tech Name -->
@@ -274,7 +277,10 @@
                                                         <div v-if="!tech.icon && !getTechIcon(tech.name)" class="w-8 h-8 rounded-lg flex items-center justify-center text-xl font-bold" :style="{ backgroundColor: tech.color, color: 'white' }">
                                                             {{ tech.name.charAt(0) }}
                                                         </div>
-                                                        <i v-else :class="tech.icon || getTechIcon(tech.name)" :style="{ color: tech.color }" class="text-3xl"></i>
+                                                        <template v-else>
+                                                            <img v-if="tech.icon && isImageUrl(tech.icon)" :src="resolveTechIcon(tech.icon)" :alt="tech.name + ' icon'" class="tech-icon-img rounded-lg" />
+                                                            <i v-else :class="tech.icon || getTechIcon(tech.name)" :style="{ color: tech.color }" class="text-3xl"></i>
+                                                        </template>
                                                     </div>
                                                     <h4 class="font-bold text-gray-900 text-center text-lg mb-2">{{ tech.name }}</h4>
                                                     <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold mx-auto" :style="{ backgroundColor: tech.color + '20', color: tech.color }">
@@ -924,4 +930,52 @@ const getProjectDays = (project) => {
         total: totalDays
     };
 };
+
+// Helpers para renderizar iconos: detectar URLs/imágenes y resolver rutas
+const isImageUrl = (value) => {
+    if (!value) return false
+    const v = String(value).trim()
+    // If it's an absolute URL, data URI, or starts with slash
+    if (v.startsWith('http') || v.startsWith('data:') || v.startsWith('/')) return true
+    // If it contains a path or a common image extension, treat as image
+    if (v.includes('/') || /\.(png|jpe?g|gif|svg|webp)(\?.*)?$/i.test(v)) return true
+    return false
+}
+
+const resolveTechIcon = (value) => {
+    if (!value) return ''
+    const v = String(value).trim()
+    if (v.startsWith('http') || v.startsWith('data:') || v.startsWith('/')) return v
+    // If it's a bare filename or storage-relative path, prefix with /storage/
+    return '/storage/' + v.replace(/^\/+/, '')
+}
+
+// Devicon/class resolver: si la cadena parece una clase, normalizarla; si no, usar el mapping
+const resolveIconClass = (iconValue, techName) => {
+    // Prefer explicit iconValue when it's a class-like string
+    if (iconValue && !isImageUrl(iconValue)) {
+        const v = String(iconValue).trim()
+        // If already contains 'devicon-' assume it's a full devicon class
+        if (v.includes('devicon-')) return v
+        // If contains spaces or looks like multiple classes, return as-is
+        if (v.includes(' ')) return v
+        // Otherwise try to prefix with 'devicon-' if it looks like a short name
+        if (/^[a-z0-9\-]+$/i.test(v)) return 'devicon-' + v
+        return v
+    }
+
+    // Fallback to mapping by techName
+    const mapped = getTechIcon(techName)
+    if (mapped) return mapped
+    return ''
+}
 </script>
+
+<style scoped>
+.tech-icon-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  display: inline-block;
+}
+</style>
