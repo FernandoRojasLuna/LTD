@@ -219,7 +219,7 @@
                                     </div>
                                     
                                     <!-- Grid normal para 1 o 2 tecnologías; usar carrusel si hay más de 2 -->
-                                    <div v-if="project.technologies.length <= 2" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div v-if="project.technologies.length <= 2" :class="project.technologies.length === 2 ? 'grid grid-cols-2 gap-6' : 'grid grid-cols-1 sm:grid-cols-2 gap-6'">
                                         <div 
                                             v-for="tech in project.technologies" 
                                             :key="tech.id"
@@ -257,39 +257,49 @@
                                         </div>
                                     </div>
 
-                                    <!-- Carrusel para más de 2 tecnologías: Swiper responsive (incluye 3) -->
+                                    <!-- Carrusel serpiente para más de 2 tecnologías -->
                                     <div v-else class="relative">
-                                        <Swiper
-                                            :modules="[Autoplay]"
-                                            :spaceBetween="12"
-                                            :loop="true"
-                                            :autoplay="{ delay: 2500, disableOnInteraction: false }"
-                                            :breakpoints="{
-                                                320: { slidesPerView: 1 },
-                                                480: { slidesPerView: 2 },
-                                                768: { slidesPerView: 3 }
-                                            }"
-                                            class="pt-4 pb-6"
+                                        <div v-if="snakeItems.length === 0" class="p-6 text-center text-gray-600">
+                                            <div class="mb-2 font-medium">No hay tecnologías para mostrar en el carrusel.</div>
+                                            <pre class="text-xs text-left max-h-40 overflow-auto bg-white rounded p-2 border">{{ JSON.stringify(project.technologies, null, 2) }}</pre>
+                                        </div>
+                                        <div
+                                            ref="snakeWrap"
+                                            class="overflow-hidden w-full pt-4 pb-6"
+                                            @pointerdown.prevent="onPointerDown"
+                                            @pointermove.prevent="onPointerMove"
+                                            @pointerup.prevent="onPointerUp"
+                                            @pointercancel.prevent="onPointerUp"
+                                            @mouseleave.prevent="onPointerUp"
+                                            @touchstart.passive="onTouchStart"
+                                            @touchmove.passive="onTouchMove"
+                                            @touchend.passive="onTouchEnd"
                                         >
-                                            <SwiperSlide v-for="(tech, idx) in project.technologies" :key="`ptech-${tech.id}-${idx}`">
-                                                <div class="group relative bg-white rounded-2xl p-4 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 cursor-pointer overflow-hidden">
-                                                    <div class="w-16 h-16 mx-auto mb-3 rounded-2xl flex items-center justify-center transition-all duration-500" :style="{ backgroundColor: tech.color + '20' }">
-                                                        <div v-if="!tech.icon && !getTechIcon(tech.name)" class="w-8 h-8 rounded-lg flex items-center justify-center text-xl font-bold" :style="{ backgroundColor: tech.color, color: 'white' }">
-                                                            {{ tech.name.charAt(0) }}
+                                            <div class="snake-track will-change-transform" :style="{ transform: 'translateX(' + snakeX + 'px)' }">
+                                                <template v-for="(tech, idx) in snakeItems" :key="`snake-${tech.id}-${idx}`">
+                                                    <div class="group relative bg-white rounded-2xl p-4 shadow-lg border border-gray-100 transition-transform duration-300 transform cursor-grab touch-none flex-shrink-0" :style="cardStyle">
+                                                        <div class="w-16 h-16 mx-auto mb-3 rounded-2xl flex items-center justify-center transition-all duration-500" :style="{ backgroundColor: tech.color + '20' }">
+                                                            <div v-if="!tech.icon && !getTechIcon(tech.name)" class="w-8 h-8 rounded-lg flex items-center justify-center text-xl font-bold" :style="{ backgroundColor: tech.color, color: 'white' }">
+                                                                {{ tech.name.charAt(0) }}
+                                                            </div>
+                                                            <template v-else>
+                                                                <img v-if="tech.icon && isImageUrl(tech.icon)" :src="resolveTechIcon(tech.icon)" :alt="tech.name + ' icon'" class="tech-icon-img rounded-lg" />
+                                                                <i v-else :class="tech.icon || getTechIcon(tech.name)" :style="{ color: tech.color }" class="text-3xl"></i>
+                                                            </template>
                                                         </div>
-                                                        <template v-else>
-                                                            <img v-if="tech.icon && isImageUrl(tech.icon)" :src="resolveTechIcon(tech.icon)" :alt="tech.name + ' icon'" class="tech-icon-img rounded-lg" />
-                                                            <i v-else :class="tech.icon || getTechIcon(tech.name)" :style="{ color: tech.color }" class="text-3xl"></i>
-                                                        </template>
+                                                        <h4 class="font-bold text-gray-900 text-center text-lg mb-2">{{ tech.name }}</h4>
+                                                        <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold mx-auto" :style="{ backgroundColor: tech.color + '20', color: tech.color }">
+                                                            <div class="w-2 h-2 rounded-full mr-2" :style="{ backgroundColor: tech.color }"></div>
+                                                            <span v-if="getTechCategory(tech.name)">{{ getTechCategory(tech.name) }}</span>
+                                                        </div>
                                                     </div>
-                                                    <h4 class="font-bold text-gray-900 text-center text-lg mb-2">{{ tech.name }}</h4>
-                                                    <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold mx-auto" :style="{ backgroundColor: tech.color + '20', color: tech.color }">
-                                                        <div class="w-2 h-2 rounded-full mr-2" :style="{ backgroundColor: tech.color }"></div>
-                                                        <span v-if="getTechCategory(tech.name)">{{ getTechCategory(tech.name) }}</span>
-                                                    </div>
-                                                </div>
-                                            </SwiperSlide>
-                                        </Swiper>
+                                                </template>
+                                            </div>
+
+                                        <!-- Debug overlay removed -->
+                                        </div>
+
+                                        <!-- Controls removed (not needed) -->
                                     </div>
                                 </div>
                             </div>
@@ -523,7 +533,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 // Swiper
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css'
@@ -664,6 +674,153 @@ const toggleAutoPlay = () => {
     }
 }
 
+// --- Snake carousel logic ---
+const snakeWrap = ref(null)
+const snakeX = ref(0)
+const snakeSpeed = ref(0.6) // px per frame; tweak for desired speed
+const snakeAnimating = ref(false)
+const rafId = ref(null)
+const isDragging = ref(false)
+const dragStartX = ref(0)
+const dragLastX = ref(0)
+const dragVelocity = ref(0)
+
+// duplicate items to allow seamless loop
+const snakeItems = computed(() => {
+    const arr = props.project.technologies || []
+    return arr.concat(arr)
+})
+
+const cardWidth = ref(160) // px approximate card width (incl gap); will try to compute dynamically
+const gap = 16
+
+const cardStyle = computed(() => ({
+    width: `${cardWidth.value}px`
+}))
+
+const snakeStyle = computed(() => ({
+    transform: `translateX(${snakeX.value}px)`
+}))
+
+const startedOnce = ref(false)
+const startSnake = () => {
+    if (snakeAnimating.value) return
+    snakeAnimating.value = true
+    console.log('startSnake: starting RAF loop')
+    const step = () => {
+        if (!startedOnce.value) {
+            console.log('snake step running')
+            startedOnce.value = true
+        }
+        if (!isDragging.value) {
+            snakeX.value -= snakeSpeed.value
+        } else {
+            snakeX.value += dragVelocity.value
+            dragVelocity.value *= 0.95
+        }
+
+        const totalWidth = (cardWidth.value + gap) * (snakeItems.value.length / 2)
+        if (Math.abs(snakeX.value) >= totalWidth) {
+            snakeX.value += totalWidth
+        }
+
+        rafId.value = requestAnimationFrame(step)
+    }
+    rafId.value = requestAnimationFrame(step)
+}
+
+const stopSnake = () => {
+    if (rafId.value) cancelAnimationFrame(rafId.value)
+    rafId.value = null
+    snakeAnimating.value = false
+}
+
+const onPointerDown = (e) => {
+    isDragging.value = true
+    dragStartX.value = e.clientX
+    dragLastX.value = e.clientX
+    dragVelocity.value = 0
+}
+
+const onPointerMove = (e) => {
+    if (!isDragging.value) return
+    const dx = e.clientX - dragLastX.value
+    dragLastX.value = e.clientX
+    snakeX.value += dx
+    dragVelocity.value = dx
+}
+
+const onPointerUp = () => {
+    isDragging.value = false
+    setTimeout(() => { if (!isDragging.value) dragVelocity.value = 0 }, 300)
+}
+
+// touch handlers
+const onTouchStart = (e) => {
+    isDragging.value = true
+    dragStartX.value = e.touches[0].clientX
+    dragLastX.value = dragStartX.value
+    dragVelocity.value = 0
+}
+const onTouchMove = (e) => {
+    if (!isDragging.value) return
+    const x = e.touches[0].clientX
+    const dx = x - dragLastX.value
+    dragLastX.value = x
+    snakeX.value += dx
+    dragVelocity.value = dx
+}
+const onTouchEnd = () => {
+    isDragging.value = false
+}
+
+// navigation (snake)
+const snakeNext = () => {
+    snakeX.value -= (cardWidth.value + gap)
+}
+const snakePrevious = () => {
+    snakeX.value += (cardWidth.value + gap)
+}
+
+// measure card width
+const measureCardWidth = async () => {
+    await nextTick()
+    try {
+        const wrap = snakeWrap.value
+        if (!wrap) return
+        const first = wrap.querySelector('.group')
+        if (first) {
+            const rect = first.getBoundingClientRect()
+            cardWidth.value = Math.round(rect.width)
+            console.log('Measured cardWidth:', cardWidth.value)
+        } else {
+            console.log('measureCardWidth: no .group found')
+        }
+        console.log('snakeItems length', snakeItems.value.length)
+    } catch (e) {
+        console.error('measureCardWidth error', e)
+    }
+}
+
+// start on mount when modal opens
+watch(() => props.show, (v) => {
+    if (v) {
+        snakeX.value = 0
+        // delay a bit to allow images/icons to layout
+        setTimeout(async () => {
+            console.log('props.show true: measuring and starting snake (delayed)')
+            await measureCardWidth()
+            startSnake()
+        }, 100)
+    } else {
+        stopSnake()
+    }
+})
+
+onUnmounted(() => {
+    stopSnake()
+})
+
 // Watchers y lifecycle
 watch(() => props.show, (newValue) => {
     if (newValue) {
@@ -683,6 +840,28 @@ onMounted(() => {
     if (props.show) {
         startCarousel()
         startActionRotation()
+    }
+})
+
+// If the modal was already open on mount, also ensure snake starts
+onMounted(() => {
+    if (props.show) {
+        console.log('onMounted: props.show true, scheduling snake start')
+        setTimeout(async () => {
+            await measureCardWidth()
+            startSnake()
+        }, 120)
+    }
+})
+
+// If technologies arrive asynchronously, start snake when we have enough items and modal is open
+watch(() => props.project && props.project.technologies && props.project.technologies.length, (len) => {
+    if (len > 2 && props.show) {
+        console.log('technologies length changed ->', len, 'starting snake (if needed)')
+        setTimeout(async () => {
+            await measureCardWidth()
+            startSnake()
+        }, 120)
     }
 })
 
@@ -972,10 +1151,39 @@ const resolveIconClass = (iconValue, techName) => {
 </script>
 
 <style scoped>
+/* Ensure existing tech icon size still applies */
 .tech-icon-img {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-  display: inline-block;
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    display: inline-block;
 }
+
+/* Snake carousel layout and visuals */
+.snake-track {
+    display: flex;
+    gap: 16px; /* must match JS gap value */
+    align-items: center;
+    will-change: transform;
+    /* No CSS transition on transform: RAF will handle smooth constant movement */
+    padding: 0.25rem 0; /* small vertical padding to avoid clipping */
+    min-height: 120px; /* ensure cards are visible even when images haven't loaded */
+    touch-action: pan-y; /* allow vertical page scrolling while enabling horizontal pointer handling */
+}
+
+.snake-track .group {
+    flex-shrink: 0; /* prevent cards from shrinking */
+}
+
+.tech-icon-img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+/* Visual feedback while dragging */
+.snake-track.dragging {
+    cursor: grabbing;
+}
+
 </style>
