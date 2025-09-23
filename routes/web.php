@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Laravel\Fortify\Http\Controllers\RegisteredUserController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -12,6 +13,28 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+/*
+|--------------------------------------------------------------------------
+| 🔒 Bloquear ruta /register original
+|--------------------------------------------------------------------------
+| Si alguien intenta entrar a /register, devolverá error 404
+*/
+Route::match(['get','post'], '/register', function () {
+    abort(404);
+});
+
+/*
+|--------------------------------------------------------------------------
+| 📝 Nueva ruta de registro protegida /registroltd
+|--------------------------------------------------------------------------
+*/
+Route::get('/registroltd', [RegisteredUserController::class, 'create'])
+    ->middleware(['guest'])
+    ->name('register.custom');
+
+Route::post('/registroltd', [RegisteredUserController::class, 'store'])
+    ->middleware(['guest']);
 
 // Test routes for banners without auth
 Route::get('/test-banners', function () {
@@ -41,37 +64,17 @@ Route::middleware([
     
     // Admin routes (protected)
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('/banners', function () {
-            return Inertia::render('Admin/BannersIntegrated');
-        })->name('banners');
-        
-        Route::get('/contents', function () {
-            return Inertia::render('Admin/Contents');
-        })->name('contents');
-        
-        Route::get('/projects', function () {
-            return Inertia::render('Admin/Projects');
-        })->name('projects');
-        
-        Route::get('/technologies', function () {
-            return Inertia::render('Admin/Technologies');
-        })->name('technologies');
-        
-        Route::get('/staff', function () {
-            return Inertia::render('Admin/Staff');
-        })->name('staff');
-        
-        Route::get('/clients', function () {
-            return Inertia::render('Admin/Clients');
-        })->name('clients');
+        Route::get('/banners', fn() => Inertia::render('Admin/BannersIntegrated'))->name('banners');
+        Route::get('/contents', fn() => Inertia::render('Admin/Contents'))->name('contents');
+        Route::get('/projects', fn() => Inertia::render('Admin/Projects'))->name('projects');
+        Route::get('/technologies', fn() => Inertia::render('Admin/Technologies'))->name('technologies');
+        Route::get('/staff', fn() => Inertia::render('Admin/Staff'))->name('staff');
+        Route::get('/clients', fn() => Inertia::render('Admin/Clients'))->name('clients');
+        Route::get('/contacts', fn() => Inertia::render('Admin/ContactSettings'))->name('contacts');
 
-        Route::get('/contacts', function () {
-            return Inertia::render('Admin/ContactSettings');
-        })->name('contacts');
-
-    // Admin API for contacts listing and marking
-    Route::get('/contacts/list', [App\Http\Controllers\ContactController::class, 'index'])->name('contacts.list');
-    Route::post('/contacts/{id}/read', [App\Http\Controllers\ContactController::class, 'markRead'])->name('contacts.read');
+        // Admin API for contacts listing and marking
+        Route::get('/contacts/list', [App\Http\Controllers\ContactController::class, 'index'])->name('contacts.list');
+        Route::post('/contacts/{id}/read', [App\Http\Controllers\ContactController::class, 'markRead'])->name('contacts.read');
     });
 });
 
