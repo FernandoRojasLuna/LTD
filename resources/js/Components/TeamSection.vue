@@ -6,99 +6,242 @@
                 <p class="text-xl text-gray-600 max-w-3xl mx-auto">Conoce al equipo de ingeniería y diseño que hace posible nuestras soluciones.</p>
             </div>
 
-            <div v-if="loading" class="text-center py-12">Cargando miembros del equipo...</div>
-            <div v-else>
-                <div v-if="members.length === 0" class="text-center py-12 text-gray-500">No hay miembros del equipo aún.</div>
-
-                    <!-- Continuous JS-driven carousel: two groups (original + clone) scrolled with requestAnimationFrame -->
-                    <div class="continuous-carousel overflow-hidden py-4" ref="carouselRef" @mouseenter="pauseScroll" @mouseleave="resumeScroll">
-                        <div class="track flex items-stretch" ref="trackRef" role="list" style="transform: translateX(0); will-change: transform;">
-                            <div class="group flex" ref="groupRef">
-                                <div v-for="(mem, idx) in members" :key="`slide1-${mem.id || idx}`" class="slide swiper-slide-auto px-2">
-                                    <button @click="openModal(mem)" class="w-full text-left group bg-white rounded-lg overflow-hidden transition-shadow duration-300 hover:shadow-2xl focus:outline-none">
-                                        <div class="relative h-40 bg-gray-100 overflow-hidden">
-                                            <img :src="imageUrl(mem.image)" :alt="mem.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                            <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
-                                        </div>
-                                        <div class="py-3 px-4 text-center">
-                                            <h4 class="text-sm font-semibold text-gray-900 truncate">{{ mem.name }}</h4>
-                                            <p class="text-xs text-gray-500 truncate">{{ mem.position }}</p>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-                            <!-- spacer para separar visualmente los grupos y evitar fusión en pantallas pequeñas -->
-                            <div class="spacer" ref="spacerRef" aria-hidden="true" style="flex: 0 0 2rem;"></div>
-                            <div class="group flex" aria-hidden="true">
-                                <div v-for="(mem, idx) in members" :key="`slide2-${mem.id || idx}`" class="slide swiper-slide-auto px-2">
-                                    <button @click="openModal(mem)" class="w-full text-left group bg-white rounded-lg overflow-hidden transition-shadow duration-300 hover:shadow-2xl focus:outline-none">
-                                        <div class="relative h-40 bg-gray-100 overflow-hidden">
-                                            <img :src="imageUrl(mem.image)" :alt="mem.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                            <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
-                                        </div>
-                                        <div class="py-3 px-4 text-center">
-                                            <h4 class="text-sm font-semibold text-gray-900 truncate">{{ mem.name }}</h4>
-                                            <p class="text-xs text-gray-500 truncate">{{ mem.position }}</p>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+            <div v-if="loading" class="flex justify-center py-8">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
             </div>
-            <!-- Modal: staff details (corporate, responsive, uses only real fields) -->
-            <div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-                <div class="bg-white rounded-lg shadow-2xl max-w-3xl w-full mx-2 overflow-hidden" style="max-height:90vh;">
-                    <!-- Header -->
-                    <div class="relative border-b bg-white">
-                        <div class="px-6 py-4">
-                            <h3 id="modal-title" class="text-2xl font-semibold text-gray-900">{{ modalMember?.name }}</h3>
-                            <p class="text-sm text-gray-500 mt-1">{{ modalMember?.position }}</p>
+
+            <div v-else-if="members.length === 0" class="text-center py-12 text-gray-500">
+                No hay miembros del equipo aún.
+            </div>
+
+            <div v-else class="overflow-hidden">
+                <!-- Contenedor del carrusel serpiente -->
+                <div class="relative w-full team-carousel-container" @mouseenter="pauseAnimation" @mouseleave="resumeAnimation">
+                    <div 
+                        ref="trackRef"
+                        class="team-track flex items-center gap-4"
+                        :class="{ 'paused': isPaused }"
+                        :style="trackStyle"
+                    >
+                        <div 
+                            v-for="(member, index) in duplicatedMembers" 
+                            :key="`member-${member.id}-${index}`"
+                            class="team-card flex-shrink-0 bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer group border border-gray-100"
+                            :style="cardStyle"
+                            @click="openModal(member)"
+                        >
+                            <div class="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100" :style="imageContainerStyle">
+                                <img 
+                                    :src="imageUrl(member.image)" 
+                                    :alt="member.name" 
+                                    class="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:brightness-110" 
+                                />
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div class="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                                    <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="p-5 bg-white">
+                                <div class="text-center space-y-2">
+                                    <h4 class="font-bold text-gray-900 text-base leading-tight">{{ member.name }}</h4>
+                                    <p class="text-sm text-indigo-600 font-medium">{{ member.position }}</p>
+                                    <div class="pt-2 flex justify-center space-x-1">
+                                        <div class="w-1 h-1 bg-indigo-300 rounded-full"></div>
+                                        <div class="w-1 h-1 bg-indigo-500 rounded-full"></div>
+                                        <div class="w-1 h-1 bg-indigo-300 rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <button id="modal-close-btn" @click="closeModal" class="absolute right-4 top-4 text-gray-600 hover:text-gray-900 focus:outline-none" aria-label="Cerrar modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal: staff details - Design Premium Corporativo -->
+            <div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                <!-- Backdrop con blur sofisticado -->
+                <div class="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/70 backdrop-blur-md"></div>
+                
+                <!-- Modal Container -->
+                <div class="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-2 modal-container" style="max-height:90vh;">
+                    <!-- Header con gradiente corporativo -->
+                    <div class="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white overflow-hidden">
+                        <!-- Decorative background pattern -->
+                        <div class="absolute inset-0 opacity-10">
+                            <div class="absolute top-0 left-0 w-40 h-40 bg-white rounded-full transform -translate-x-20 -translate-y-20"></div>
+                            <div class="absolute bottom-0 right-0 w-32 h-32 bg-white rounded-full transform translate-x-16 translate-y-16"></div>
+                        </div>
+                        
+                        <div class="relative px-8 py-6">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h3 id="modal-title" class="text-2xl font-bold text-white mb-1">
+                                        {{ modalMember?.name }}
+                                    </h3>
+                                    <p class="text-indigo-100 font-medium text-sm">
+                                        <span class="inline-flex items-center gap-2">
+                                            <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse inline-block"></span>
+                                            <span>{{ modalMember?.position }}</span>
+                                        </span>
+                                    </p>
+                                    
+                                </div>
+                                
+                                <button 
+                                    ref="closeButtonRef"
+                                    @click="closeModal" 
+                                    class="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200 backdrop-blur-sm" 
+                                    aria-label="Cerrar modal"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Body -->
-                    <div class="p-6 overflow-auto">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                            <div class="md:col-span-1">
-                                <div class="rounded-lg overflow-hidden bg-gray-50 p-3">
-                                    <img :src="imageUrl(modalMember?.image)" :alt="modalMember?.name" class="w-full h-64 object-cover rounded-md shadow-sm" />
+                    <!-- Body con diseño corporativo premium -->
+                    <div class="p-8 bg-gradient-to-br from-gray-50 to-white modal-body">
+                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                            <!-- Columna de imagen - más prominente -->
+                            <div class="lg:col-span-2">
+                                <div class="relative">
+                                    <!-- Imagen principal con marco sofisticado -->
+                                    <div class="relative group">
+                                        <div class="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+                                        <div class="relative bg-white p-3 rounded-2xl">
+                                            <img 
+                                                :src="imageUrl(modalMember?.image)" 
+                                                :alt="modalMember?.name" 
+                                                class="w-full h-80 object-cover rounded-xl shadow-lg" 
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Indicadores de estado -->
+                                    <div class="absolute top-6 right-6 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                                        Activo
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="md:col-span-2">
-                                <p class="text-sm text-gray-500">Perfil</p>
-                                <p class="mt-4 text-gray-700 leading-relaxed">{{ modalMember?.bio || 'Información no disponible.' }}</p>
+                            <!-- Columna de contenido -->
+                            <div class="lg:col-span-3 space-y-6">
+                                <!-- Sección Perfil -->
+                                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                                    <div class="flex items-center mb-4">
+                                        <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                                            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                            </svg>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-900">Perfil Profesional</h4>
+                                    </div>
+                                    <p class="text-gray-600 leading-relaxed">
+                                        {{ modalMember?.bio || 'Profesional altamente capacitado con experiencia en el desarrollo de soluciones innovadoras. Comprometido con la excelencia y el crecimiento continuo en el campo de la tecnología.' }}
+                                    </p>
+                                </div>
 
-                                <div class="mt-6 flex flex-wrap items-center gap-3">
-                                    <a v-if="modalMember?.linkedin" :href="modalMember.linkedin" target="_blank" class="inline-flex items-center gap-2 text-indigo-600 hover:underline">
-                                        <!-- simple LinkedIn icon -->
-                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.5 8h4V24h-4zM8.5 8h3.78v2.2h.05c.53-1 1.83-2.2 3.77-2.2 4.03 0 4.78 2.66 4.78 6.12V24h-4v-7.2c0-1.72-.03-3.94-2.4-3.94-2.4 0-2.77 1.88-2.77 3.81V24h-4V8z"/></svg>
-                                        LinkedIn
-                                    </a>
+                                <!-- Sección Redes Sociales Premium -->
+                                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                                    <div class="flex items-center mb-4">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                            </svg>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-900">Conectar</h4>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <!-- LinkedIn -->
+                                        <a 
+                                            v-if="modalMember?.linkedin" 
+                                            :href="modalMember.linkedin" 
+                                            target="_blank" 
+                                            class="group flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl transition-all duration-200 border border-blue-200"
+                                        >
+                                            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-200">
+                                                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-semibold text-blue-900">LinkedIn</p>
+                                                <p class="text-sm text-blue-600">Ver perfil profesional</p>
+                                            </div>
+                                            <svg class="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                            </svg>
+                                        </a>
 
-                                    <a v-if="modalMember?.github" :href="modalMember.github" target="_blank" class="inline-flex items-center gap-2 text-gray-800 hover:underline">
-                                        <!-- simple GitHub icon -->
-                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.37.5 0 5.87 0 12.49c0 5.28 3.44 9.75 8.21 11.33.6.11.82-.26.82-.58 0-.29-.01-1.05-.01-2.07-3.34.73-4.04-1.61-4.04-1.61-.55-1.4-1.34-1.78-1.34-1.78-1.09-.75.08-.74.08-.74 1.2.08 1.83 1.23 1.83 1.23 1.07 1.83 2.8 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.92 0-1.31.47-2.38 1.23-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.45 11.45 0 013.01-.41c1.02.01 2.05.14 3.01.41 2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.6-2.8 5.61-5.47 5.91.43.37.81 1.1.81 2.22 0 1.6-.01 2.89-.01 3.29 0 .32.21.69.82.57C20.56 22.23 24 17.76 24 12.49 24 5.87 18.63.5 12 .5z"/></svg>
-                                        GitHub
-                                    </a>
+                                        <!-- GitHub -->
+                                        <a 
+                                            v-if="modalMember?.github" 
+                                            :href="modalMember.github" 
+                                            target="_blank" 
+                                            class="group flex items-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 rounded-xl transition-all duration-200 border border-gray-200"
+                                        >
+                                            <div class="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-200">
+                                                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-semibold text-gray-900">GitHub</p>
+                                                <p class="text-sm text-gray-600">Ver repositorios</p>
+                                            </div>
+                                            <svg class="w-5 h-5 text-gray-600 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                            </svg>
+                                        </a>
 
-                                    <a v-if="modalMember?.email" :href="`mailto:${modalMember.email}`" class="inline-flex items-center gap-2 text-gray-600 hover:underline">
-                                        <!-- simple mail icon -->
-                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1.5 4.5h21v15h-21v-15zm19.5-1.5h-18c-.83 0-1.5.67-1.5 1.5v15c0 .83.67 1.5 1.5 1.5h18c.83 0 1.5-.67 1.5-1.5v-15c0-.83-.67-1.5-1.5-1.5zm-9 9.75l-7.5-4.5v-.75l7.5 4.5 7.5-4.5v.75l-7.5 4.5z"/></svg>
-                                        Email
-                                    </a>
+                                        <!-- Email -->
+                                        <a 
+                                            v-if="modalMember?.email" 
+                                            :href="`mailto:${modalMember.email}`" 
+                                            class="group flex items-center p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 rounded-xl transition-all duration-200 border border-emerald-200 sm:col-span-2"
+                                        >
+                                            <div class="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-200">
+                                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-semibold text-emerald-900">Email</p>
+                                                <p class="text-sm text-emerald-600">Enviar mensaje directo</p>
+                                            </div>
+                                            <svg class="w-5 h-5 text-emerald-600 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                            </svg>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Footer -->
-                    <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-3">
-                        <button @click="closeModal" class="px-4 py-2 rounded-md bg-white border text-gray-700 hover:bg-gray-50">Cerrar</button>
-                        <a v-if="modalMember?.linkedin" :href="modalMember.linkedin" target="_blank" class="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Ver perfil</a>
+                    <!-- Footer mejorado -->
+                    <div class="px-8 py-6 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Perfil profesional verificado
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button 
+                                @click="closeModal" 
+                                class="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                                Cerrar
+                            </button>
+                            
+                        </div>
                     </div>
                 </div>
             </div>
@@ -107,74 +250,150 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useStaff } from '@/composables/useStaff'
 
-    const { staff, loading, error, fetchStaff, getActiveStaff } = useStaff()
-    const members = ref([])
+const { staff, loading, error, fetchStaff, getActiveStaff } = useStaff()
 
-    // To ensure a smooth, continuous "serpiente" loop even when there are few members,
-    // render a duplicated list. A pure CSS marquee will drive a continuous animation.
-    const displayMembers = computed(() => {
-        if (!members.value || members.value.length === 0) return []
-        return [...members.value, ...members.value]
-    })
+// Estado reactivo
+const members = ref([])
+const isPaused = ref(false)
+const trackRef = ref(null)
+const closeButtonRef = ref(null)
 
-    // JS-driven scroller state
-    const carouselRef = ref(null)
-    const trackRef = ref(null)
-    const groupRef = ref(null)
-    const spacerRef = ref(null)
-    let rafId = null
-    const paused = ref(false)
-
-    // speed in pixels per second (tweakable)
-    const pxPerSecond = ref(100)
-
-
-    const lastTime = { value: 0 }
-    const offset = { value: 0 }
-
-    const measureAndStart = () => {
-        cancelRAF()
-        offset.value = 0
-        lastTime.value = performance.now()
-        // measure widths including spacer
-        const groupWidth = groupRef.value ? groupRef.value.offsetWidth : 0
-        const spacerWidth = spacerRef.value ? spacerRef.value.offsetWidth : 0
-        // store total cycle width on the element for speed
-        if (trackRef.value) trackRef.value._cycleWidth = groupWidth + spacerWidth
-        rafId = requestAnimationFrame(loop)
-    }
-
-    const loop = (now) => {
-        if (!lastTime.value) lastTime.value = now
-        if (paused.value) { lastTime.value = now; rafId = requestAnimationFrame(loop); return }
-        const delta = (now - lastTime.value) / 1000
-        lastTime.value = now
-        const cycleWidth = trackRef.value && trackRef.value._cycleWidth ? trackRef.value._cycleWidth : (groupRef.value ? groupRef.value.offsetWidth : 0)
-        if (cycleWidth > 0) {
-            offset.value += delta * pxPerSecond.value
-            if (offset.value >= cycleWidth) offset.value -= cycleWidth
-            const x = -offset.value
-            if (trackRef.value) trackRef.value.style.transform = `translateX(${x}px)`
-        }
-        rafId = requestAnimationFrame(loop)
-    }
-
-    const cancelRAF = () => { if (rafId) { cancelAnimationFrame(rafId); rafId = null } }
-
-    const pauseScroll = () => { paused.value = true }
-    const resumeScroll = () => { if (paused.value) { paused.value = false; lastTime.value = performance.now(); } }
-
-// Carousel state handled by Swiper now (continuous autoplay/freeMode)
+// Configuración del carrusel
+const animationDuration = ref(30) // segundos para completar un ciclo
+const cardWidth = ref(240) // ancho de cada tarjeta en px - más ancho para look corporativo
+const gap = ref(20) // espacio entre tarjetas en px - más espacio para respirar
 
 // Modal state
 const modalOpen = ref(false)
 const modalMember = ref(null)
 
-// Fetch members
-onMounted(async () => {
+// Actualizar configuración responsive
+const updateResponsiveConfig = () => {
+    const width = window.innerWidth
+    if (width < 640) {
+        cardWidth.value = 180
+        gap.value = 16
+        animationDuration.value = 25
+    } else if (width < 1024) {
+        cardWidth.value = 200
+        gap.value = 18
+        animationDuration.value = 27
+    } else {
+        // Para pantallas grandes: tarjetas más profesionales y espaciadas
+        cardWidth.value = 240
+        gap.value = 20
+        animationDuration.value = 30
+    }
+}
+
+// Duplicar miembros para efecto infinito
+const duplicatedMembers = computed(() => {
+    if (members.value.length === 0) return []
+    
+    // Crear 3 copias para asegurar movimiento infinito suave
+    const copies = 3
+    const result = []
+    
+    for (let i = 0; i < copies; i++) {
+        members.value.forEach((member, index) => {
+            result.push({
+                ...member,
+                uniqueId: `${member.id}-copy-${i}-${index}`
+            })
+        })
+    }
+    
+    return result
+})
+
+// Estilos computados
+const trackStyle = computed(() => {
+    const totalWidth = members.value.length * (cardWidth.value + gap.value)
+    
+    return {
+        '--animation-duration': `${animationDuration.value}s`,
+        '--translate-distance': `${totalWidth}px`,
+        width: `${duplicatedMembers.value.length * (cardWidth.value + gap.value)}px`
+    }
+})
+
+const cardStyle = computed(() => ({
+    minWidth: `${cardWidth.value}px`,
+    width: `${cardWidth.value}px`
+}))
+
+// Estilo del contenedor de imagen responsive
+const imageContainerStyle = computed(() => {
+    const width = window.innerWidth
+    let height = '240px' // altura por defecto más profesional
+    
+    if (width < 640) {
+        height = '200px'
+    } else if (width < 1024) {
+        height = '220px'
+    }
+    
+    return {
+        height: height
+    }
+})
+
+// Controles de animación
+const pauseAnimation = () => {
+    isPaused.value = true
+}
+
+const resumeAnimation = () => {
+    isPaused.value = false
+}
+
+// Helper: normalize image URLs
+const imageUrl = (val) => {
+    if (!val) return '/images/staff/placeholder.jpg'
+    if (val.startsWith('http://') || val.startsWith('https://')) return val
+    if (val.startsWith('/')) return val
+    return '/storage/' + val.replace(/^\/+/, '')
+}
+
+// Modal controls
+const openModal = (member) => { 
+    modalMember.value = member
+    modalOpen.value = true
+    nextTick(() => {
+        if (closeButtonRef.value) {
+            closeButtonRef.value.focus()
+        }
+    })
+}
+
+const closeModal = () => { 
+    modalOpen.value = false
+    modalMember.value = null
+}
+
+// Evitar scroll del body cuando el modal está abierto
+watch(modalOpen, (val) => {
+    if (val) {
+        document.documentElement.style.overflow = 'hidden'
+        document.body.style.overflow = 'hidden'
+    } else {
+        document.documentElement.style.overflow = ''
+        document.body.style.overflow = ''
+    }
+})
+
+// Keyboard handler
+const onKeyDown = (e) => {
+    if (e.key === 'Escape' && modalOpen.value) {
+        closeModal()
+    }
+}
+
+// Cargar miembros del equipo
+const loadMembers = async () => {
     try {
         if (fetchStaff) {
             await fetchStaff()
@@ -182,91 +401,212 @@ onMounted(async () => {
         } else if (getActiveStaff) {
             members.value = await getActiveStaff()
         }
-    } catch (e) {
-        console.error('Error loading staff:', e)
+    } catch (error) {
+        console.error('Error loading staff:', error)
         members.value = []
     }
-    await nextTick()
-    // keyboard handler for modal
+}
+
+// Lifecycle hooks
+onMounted(async () => {
+    await loadMembers()
+    updateResponsiveConfig()
+    
+    // Event listeners
+    window.addEventListener('resize', updateResponsiveConfig)
     window.addEventListener('keydown', onKeyDown)
-        // start JS scroller
-        await nextTick()
-        if (groupRef.value && trackRef.value) {
-            // ensure layout measured
-            measureAndStart()
-            window.addEventListener('resize', measureAndStart)
-        }
 })
 
-onUnmounted(() => {
-    // cleanup
-    cancelRAF()
+onBeforeUnmount(() => {
+    window.removeEventListener('resize', updateResponsiveConfig)
     window.removeEventListener('keydown', onKeyDown)
-    window.removeEventListener('resize', measureAndStart)
 })
-
-const onKeyDown = (e) => {
-    if (e.key === 'Escape' && modalOpen.value) closeModal()
-}
-
-
-// modal controls
-const openModal = (mem) => { modalMember.value = mem; modalOpen.value = true; nextTick(() => { const btn = document.querySelector('#modal-close-btn'); if (btn) btn.focus() }) }
-const closeModal = () => { modalOpen.value = false; modalMember.value = null }
-
-// Helper: normalize image URLs
-const imageUrl = (val) => {
-    if (!val) return '/images/staff/placeholder.jpg'
-    // If absolute URL
-    if (val.startsWith('http://') || val.startsWith('https://')) return val
-    // If already starts with / (public path), return as-is
-    if (val.startsWith('/')) return val
-    // If stored path like 'staff/xxx.jpg' or 'staff\xxx.jpg', prefix with /storage/
-    return '/storage/' + val.replace(/^\/+/, '')
-}
 </script>
 
 <style scoped>
-.line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
+.team-carousel-container {
+    overflow: hidden;
+    position: relative;
+}
+
+.team-track {
+    animation: slideLeft var(--animation-duration, 30s) linear infinite;
+    will-change: transform;
+}
+
+.team-track.paused {
+    animation-play-state: paused;
+}
+
+.team-card {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+}
+
+.team-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.team-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+    border-radius: inherit;
+}
+
+.team-card:hover::before {
+    opacity: 1;
+}
+
+.team-card > * {
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes slideLeft {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(calc(-1 * var(--translate-distance, 300px)));
+    }
+}
+
+/* Estilos responsive mejorados */
+@media (max-width: 640px) {
+    .team-card {
+        border-radius: 1rem;
+    }
+    
+    .team-card .p-5 {
+        padding: 1rem;
+    }
+    
+    .team-card .text-base {
+        font-size: 0.875rem;
+    }
+    
+    .team-card .text-sm {
+        font-size: 0.75rem;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .team-card {
+        border-radius: 1.25rem;
+    }
+}
+
+/* Para pantallas grandes - look más corporativo */
+@media (min-width: 1025px) {
+    .team-card {
+        border-radius: 1.5rem;
+    }
+    
+    .team-card .p-5 {
+        padding: 1.5rem;
+    }
+}
+
+/* Gradientes laterales más sofisticados */
+.team-carousel-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+    background: linear-gradient(to right, 
+        rgba(255, 255, 255, 1) 0%, 
+        rgba(255, 255, 255, 0.9) 30%,
+        rgba(255, 255, 255, 0.5) 70%,
+        rgba(255, 255, 255, 0) 100%);
+    z-index: 3;
+    pointer-events: none;
+}
+
+.team-carousel-container::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+    background: linear-gradient(to left, 
+        rgba(255, 255, 255, 1) 0%, 
+        rgba(255, 255, 255, 0.9) 30%,
+        rgba(255, 255, 255, 0.5) 70%,
+        rgba(255, 255, 255, 0) 100%);
+    z-index: 3;
+    pointer-events: none;
+}
+
+/* Modal styles mejorados */
+.fixed.inset-0 {
+    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* Hacer que el modal tenga layout en columna y el body sea scrollable */
+.modal-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
     overflow: hidden;
 }
 
-/* Clean card minimal look */
-.group img { border-radius: 0.5rem; }
-.group button { border: none; background: transparent; }
-
-/* Modal tweaks */
-[role="dialog"] { padding: 1rem; }
-
-/* Ensure 5-up layout items don't shrink unexpectedly */
-.w-1\/5 { width: 20%; }
-
-/* overlay/button tweaks */
-.group .bg-white\/20 { background-color: rgba(255,255,255,0.18); }
-.group .backdrop-blur-sm { backdrop-filter: blur(4px); }
-.group-hover\:scale-110 { transform: scale(1.10); }
-
-/* For slidesPerView: 'auto' ensure a minimum width so large screens keep movement smooth */
-.swiper-slide-auto { min-width: 12rem; }
-@media (min-width: 768px) {
-    .swiper-slide-auto { min-width: 14rem; }
-}
-@media (min-width: 1280px) {
-    .swiper-slide-auto { min-width: 16rem; }
+.modal-body {
+    overflow: auto;
+    /* Dejar espacio para header (aprox 120px) y footer (aprox 72px) */
+    max-height: calc(90vh - 192px);
 }
 
-/* Continuous marquee animation for the team carousel */
-.continuous-carousel .track {
-    display: flex;
-    gap: 0.5rem;
-    align-items: stretch;
+/* Efectos profesionales adicionales */
+.team-card .group {
+    position: relative;
+    overflow: hidden;
 }
 
-/* Ensure slides are inline and don't shrink */
-.continuous-carousel .slide { flex: 0 0 auto; }
-.continuous-carousel .slide .h-40 { height: 10rem; }
+.team-card .group::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #6366f1, #8b5cf6, #06b6d4, #10b981);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+}
+
+.team-card:hover .group::after {
+    opacity: 0.1;
+}
+
+/* Hover effects para imágenes del equipo */
+.team-card img {
+    transition: transform 0.5s ease;
+}
+
+.team-card:hover img {
+    transform: scale(1.05);
+}
+
+/* Truncate text */
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 </style>

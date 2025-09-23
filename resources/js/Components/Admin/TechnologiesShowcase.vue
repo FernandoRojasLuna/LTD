@@ -15,195 +15,291 @@
       </div>
 
       <div v-else class="overflow-hidden">
-        <!-- Swiper continuous carousel: loop + freeMode + autoplay to emulate a seamless snake-like scroll -->
-        <div class="relative w-full" @mouseenter="stopAutoplay" @mouseleave="startAutoplay">
-          <Swiper
-            ref="swiperTech"
-            :modules="[Autoplay, FreeMode]"
-            :spaceBetween="12"
-            :slidesPerView="slidesPerView"
-            :loop="true"
-            :freeMode="true"
-            :freeModeMomentum="false"
-            :autoplay="{ delay: 0, disableOnInteraction: false, pauseOnMouseEnter: false }"
-            :speed="autoplaySpeed"
-            class="tech-swiper w-full"
+        <!-- Contenedor del carrusel serpiente -->
+        <div class="relative w-full tech-carousel-container" @mouseenter="pauseAnimation" @mouseleave="resumeAnimation">
+          <div 
+            ref="trackRef"
+            class="tech-track flex items-center gap-4"
+            :class="{ 'paused': isPaused }"
+            :style="trackStyle"
           >
-            <SwiperSlide v-for="(t, idx) in technologies" :key="`tech-${t.id}-${idx}`" class="tech-slide flex items-center justify-center">
-              <article class="p-3 bg-white rounded-lg shadow-sm flex flex-col items-center w-full max-w-xs">
-                <div class="w-16 h-16 flex items-center justify-center mb-2">
-                  <img v-if="isImageUrl(t.icon)" :src="t.icon" :alt="t.name" class="w-12 h-12 object-contain" />
-                  <i v-else-if="t.icon" :class="t.icon + ' text-2xl'" aria-hidden="true"></i>
-                  <div v-else class="text-gray-400 font-bold text-xl">{{ initials(t.name) }}</div>
+            <article 
+              v-for="(tech, index) in duplicatedTechnologies" 
+              :key="`tech-${tech.id}-${index}`"
+              class="tech-card flex-shrink-0 p-3 bg-white rounded-lg shadow-sm flex flex-col items-center"
+              :style="cardStyle"
+            >
+              <div class="w-16 h-16 flex items-center justify-center mb-2">
+                <img 
+                  v-if="isImageUrl(tech.icon)" 
+                  :src="tech.icon" 
+                  :alt="tech.name" 
+                  class="w-12 h-12 object-contain" 
+                />
+                <i 
+                  v-else-if="tech.icon" 
+                  :class="tech.icon + ' text-2xl text-indigo-600'" 
+                  aria-hidden="true"
+                ></i>
+                <div v-else class="text-gray-400 font-bold text-xl">
+                  {{ initials(tech.name) }}
                 </div>
-                <div class="text-sm font-semibold text-gray-700 text-center">{{ t.name }}</div>
-              </article>
-            </SwiperSlide>
-          </Swiper>
+              </div>
+              <div class="text-sm font-semibold text-gray-700 text-center leading-tight">
+                {{ tech.name }}
+              </div>
+            </article>
+          </div>
         </div>
       </div>
     </div>
   </section>
 </template>
+
 <script setup>
-import { ref, onMounted, computed, nextTick, onBeforeUnmount } from 'vue'
-// Swiper
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import 'swiper/css'
-import 'swiper/css/free-mode'
-import SwiperCore, { Autoplay, FreeMode } from 'swiper'
-SwiperCore.use([Autoplay, FreeMode])
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useTechnologies } from '@/composables/useTechnologies'
 
 const { getActiveTechnologies } = useTechnologies()
+
+// Estado reactivo
 const technologies = ref([])
 const loading = ref(false)
+const isPaused = ref(false)
+const trackRef = ref(null)
 
-const viewport = ref(null)
-const track = ref(null)
-const swiperTech = ref(null)
+// Configuración del carrusel
+const animationDuration = ref(25) // segundos para completar un ciclo (más rápido)
+const cardWidth = ref(160) // ancho de cada tarjeta en px
+const gap = ref(16) // espacio entre tarjetas en px
 
-// missing reactive state used elsewhere
-const position = ref(0)
-const animating = ref(true)
+// Funciones de utilidad
+const isImageUrl = (url) => url && (url.startsWith('http') || url.startsWith('/storage/') || url.startsWith('data:'))
+const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : ''
 
-// Carousel config (responsive)
-const slidesPerView = ref(7)
-const autoplaySpeed = ref(12000) // base speed in ms for a full loop-ish feel (swiper speed controls slide transition)
-
-// compute slidesPerView responsively
-const updateSlidesPerView = () => {
-  const w = window.innerWidth
-  if (w < 420) {
-    slidesPerView.value = 2
-    autoplaySpeed.value = 7000
-  } else if (w < 640) {
-    slidesPerView.value = 3
-    autoplaySpeed.value = 9000
-  } else if (w < 1024) {
-    slidesPerView.value = 5
-    autoplaySpeed.value = 11000
+// Actualizar configuración responsive
+const updateResponsiveConfig = () => {
+  const width = window.innerWidth
+  if (width < 640) {
+    cardWidth.value = 120
+    gap.value = 12
+    animationDuration.value = 20 // más rápido en móviles
+  } else if (width < 1024) {
+    cardWidth.value = 140
+    gap.value = 14
+    animationDuration.value = 22
   } else {
-    slidesPerView.value = 7
-    autoplaySpeed.value = 14000
+    // Para pantallas grandes: mostrar 9 tarjetas
+    // Calculamos el ancho disponible menos padding y gaps
+    const availableWidth = Math.min(width * 0.85, 1280) // max-w-7xl con padding
+    const totalGaps = 8 * 16 // 8 gaps entre 9 tarjetas
+    cardWidth.value = Math.floor((availableWidth - totalGaps) / 9)
+    gap.value = 16
+    animationDuration.value = 25
   }
 }
 
-const isImageUrl = (url) => url && (url.startsWith('http') || url.startsWith('/storage/') || url.startsWith('data:'))
-const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) : ''
-
-// Build continuousDisplay by repeating the base sequence multiple times so CSS animation never shows a gap
-const continuousDisplay = computed(() => {
-  const base = technologies.value || []
-  if (base.length === 0) return []
-  // Duplicate twice (base + base) to allow smooth loop
-  return Array.from({ length: 2 }).flatMap(() => base.map(b => ({ ...b })))
-})
-
-// animationDistancePct: how much percent the track must translate to move one base sequence
-const animationDistancePct = computed(() => {
-  const baseCount = Math.max(technologies.value.length, 1)
-  return baseCount * itemWidthPct
-})
-
-// animationDuration: seconds for a full base sequence translation (calm movement)
-const animationDuration = computed(() => {
-  const baseCount = Math.max(technologies.value.length, 1)
-  return Math.max(10, Math.round((baseCount / VISIBLE) * 14))
-})
-
-// trackStyle replaced by CSS animation; keep placeholder for compatibility
-const trackStyle = computed(() => ({ }))
-
-const normalizeIcons = (arr) => arr.map(t => {
-  if (t.icon && !t.icon.startsWith('http') && !t.icon.startsWith('data:')) {
-    t.icon = '/storage/' + t.icon.replace(/^\/+/, '')
+// Duplicar tecnologías para efecto infinito
+const duplicatedTechnologies = computed(() => {
+  if (technologies.value.length === 0) return []
+  
+  // Crear 3 copias para asegurar movimiento infinito suave
+  const copies = 3
+  const result = []
+  
+  for (let i = 0; i < copies; i++) {
+    technologies.value.forEach((tech, index) => {
+      result.push({
+        ...tech,
+        uniqueId: `${tech.id}-copy-${i}-${index}`
+      })
+    })
   }
-  return t
+  
+  return result
 })
 
+// Estilos computados
+const trackStyle = computed(() => {
+  const totalWidth = technologies.value.length * (cardWidth.value + gap.value)
+  
+  return {
+    '--animation-duration': `${animationDuration.value}s`,
+    '--translate-distance': `${totalWidth}px`,
+    width: `${duplicatedTechnologies.value.length * (cardWidth.value + gap.value)}px`
+  }
+})
+
+const cardStyle = computed(() => ({
+  minWidth: `${cardWidth.value}px`,
+  width: `${cardWidth.value}px`
+}))
+
+// Controles de animación
+const pauseAnimation = () => {
+  isPaused.value = true
+}
+
+const resumeAnimation = () => {
+  isPaused.value = false
+}
+
+// Normalizar iconos
+const normalizeIcons = (arr) => arr.map(tech => {
+  if (tech.icon && !tech.icon.startsWith('http') && !tech.icon.startsWith('data:')) {
+    tech.icon = '/storage/' + tech.icon.replace(/^\/+/, '')
+  }
+  return tech
+})
+
+// Cargar tecnologías
 const load = async () => {
   loading.value = true
   try {
     const data = await getActiveTechnologies()
     technologies.value = normalizeIcons(data || [])
-    // reset position and ensure animation state is in sync
-    position.value = 0
-    await nextTick()
-    // allow the CSS animation to run by default
-    animating.value = true
-    // if track element exists, ensure animationPlayState reflects current state
-    if (track.value && track.value.style) track.value.style.animationPlayState = animating.value ? 'running' : 'paused'
-  } catch (e) {
-    console.error('load technologies', e)
+  } catch (error) {
+    console.error('Error loading technologies:', error)
   } finally {
     loading.value = false
   }
 }
 
-// continuous animation - minimal JS: allow pause on hover
-const startAutoplay = () => {
-  animating.value = true
-  if (track.value && track.value.style) track.value.style.animationPlayState = 'running'
-  // start swiper autoplay if available
-  try { if (swiperTech.value && swiperTech.value.autoplay && !swiperTech.value.autoplay.running) swiperTech.value.autoplay.start() } catch (e) { /* ignore */ }
-}
-const stopAutoplay = () => {
-  animating.value = false
-  if (track.value && track.value.style) track.value.style.animationPlayState = 'paused'
-  // stop swiper autoplay if available
-  try { if (swiperTech.value && swiperTech.value.autoplay && swiperTech.value.autoplay.running) swiperTech.value.autoplay.stop() } catch (e) { /* ignore */ }
-}
-
+// Lifecycle hooks
 onMounted(async () => {
   await load()
-  // ensure animation is running after mount
-  startAutoplay()
-  // responsive slides per view
-  updateSlidesPerView()
-  window.addEventListener('resize', updateSlidesPerView)
+  updateResponsiveConfig()
+  
+  // Listener para cambios de tamaño de ventana
+  window.addEventListener('resize', updateResponsiveConfig)
 })
-onBeforeUnmount(() => stopAutoplay())
 
-// expose for template if needed
-// ...existing code...
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateResponsiveConfig)
+})
 </script>
 
 <style scoped>
-.w-16-custom { width: 4rem; height: 4rem }
+.tech-carousel-container {
+  overflow: hidden;
+  position: relative;
+}
 
-/* Track animation: desplazamiento continuo hacia la izquierda. La duración se controla por la variable --duration (s). */
 .tech-track {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  /* animation will be applied to the track element */
-  animation-name: tech-scroll;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  animation-duration: var(--duration, 12s);
+  animation: slideLeft var(--animation-duration, 25s) linear infinite;
+  will-change: transform;
 }
 
-@keyframes tech-scroll {
-  from { transform: translateX(0%); }
-  to { transform: translateX(calc(-1 * var(--distance, 50%))); }
+.tech-track.paused {
+  animation-play-state: paused;
 }
 
-/* Swiper slide and responsive spacing */
-.tech-slide { display: flex; align-items: center; justify-content: center; padding: 6px; }
-.tech-slide article { width: 100%; }
+.tech-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
+.tech-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-1 * var(--translate-distance, 300px)));
+  }
+}
+
+/* Estilos responsive */
 @media (max-width: 640px) {
-  .tech-slide { padding: 4px; }
-  .tech-slide img { max-width: 48px; max-height: 48px; }
-  .tech-slide .text-sm { font-size: 0.68rem; }
+  .tech-card {
+    padding: 0.5rem;
+  }
+  
+  .tech-card .w-16 {
+    width: 3rem;
+    height: 3rem;
+  }
+  
+  .tech-card img {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  .tech-card .text-sm {
+    font-size: 0.75rem;
+  }
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
-  .tech-slide img { max-width: 56px; max-height: 56px; }
+  .tech-card .w-16 {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  
+  .tech-card img {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
 }
 
-/* Hide legacy track animation when using Swiper */
-.tech-track { display: none; }
-.tech-swiper { display: block; }
+/* Para pantallas grandes (>1024px) - 9 tarjetas visibles */
+@media (min-width: 1025px) {
+  .tech-card {
+    padding: 0.6rem;
+  }
+  
+  .tech-card .w-16 {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  
+  .tech-card img {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+  
+  .tech-card .text-sm {
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+}
+
+/* Efectos adicionales */
+.tech-track::before,
+.tech-track::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tech-carousel-container::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+  z-index: 2;
+  pointer-events: none;
+}
+
+.tech-carousel-container::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+  z-index: 2;
+  pointer-events: none;
+}
 </style>

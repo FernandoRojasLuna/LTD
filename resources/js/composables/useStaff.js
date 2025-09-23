@@ -44,7 +44,10 @@ export function useStaff() {
                 fd.append('image', file)
                 response = await axios.post('/api/staff', fd)
             } else {
-                response = await axios.post('/api/staff', memberData)
+                // Si no hay archivo, no enviar la propiedad `image` (ruta string)
+                const payload = { ...memberData }
+                if (payload.hasOwnProperty('image')) delete payload.image
+                response = await axios.post('/api/staff', payload)
             }
             await fetchStaff() // Refresh the list
             return response.data
@@ -79,7 +82,10 @@ export function useStaff() {
                 fd.append('image', file)
                 response = await axios.post(`/api/staff/${id}?_method=PUT`, fd)
             } else {
-                response = await axios.put(`/api/staff/${id}`, memberData)
+                // Si no hay archivo nuevo, evitar enviar la propiedad `image` (string path)
+                const payload = { ...memberData }
+                if (payload.hasOwnProperty('image')) delete payload.image
+                response = await axios.put(`/api/staff/${id}`, payload)
             }
             await fetchStaff() // Refresh the list
             return response.data
