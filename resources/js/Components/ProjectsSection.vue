@@ -1,30 +1,30 @@
 <template>
-    <section id="projects" class="py-16 bg-gray-50">
+    <section id="projects" class="py-16 bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Header -->
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Nuestros Proyectos</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Cada proyecto es una apuesta por la innovación, el desarrollo sostenible y la transformación digital real.</p>
+                <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">Nuestros Proyectos</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">Cada proyecto es una apuesta por la innovación, el desarrollo sostenible y la transformación digital real.</p>
             </div>
 
             <!-- Tabs -->
             <div class="flex justify-center mb-8">
-                <div class="bg-white rounded-lg p-1 shadow-sm">
-                    <button @click="activeTab = 'all'" :class="['px-6 py-2 rounded-md text-sm font-medium transition-all duration-200', activeTab === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50']">Todos</button>
-                    <button @click="activeTab = 'development'" :class="['px-6 py-2 rounded-md text-sm font-medium transition-all duration-200', activeTab === 'development' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50']">En Desarrollo</button>
-                    <button @click="activeTab = 'deployed'" :class="['px-6 py-2 rounded-md text-sm font-medium transition-all duration-200', activeTab === 'deployed' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50']">Desplegados</button>
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm">
+                    <button @click="activeTab = 'all'" :class="['px-6 py-2 rounded-md text-sm font-medium transition-all duration-200', activeTab === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-700 dark:text-gray-200 hover:text-indigo-600 hover:bg-gray-50 dark:hover:bg-gray-700']">Todos</button>
+                    <button @click="activeTab = 'development'" :class="['px-6 py-2 rounded-md text-sm font-medium transition-all duration-200', activeTab === 'development' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-700 dark:text-gray-200 hover:text-indigo-600 hover:bg-gray-50 dark:hover:bg-gray-700']">En Desarrollo</button>
+                    <button @click="activeTab = 'deployed'" :class="['px-6 py-2 rounded-md text-sm font-medium transition-all duration-200', activeTab === 'deployed' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-700 dark:text-gray-200 hover:text-indigo-600 hover:bg-gray-50 dark:hover:bg-gray-700']">Desplegados</button>
                 </div>
             </div>
 
             <!-- Projects: mobile grid, desktop carousel -->
             <div v-if="filteredProjects.length > 0">
                 <!-- Mobile: carousel 1-up with swipe -->
-                <div class="block lg:hidden">
+                    <div class="block lg:hidden">
                     <div class="relative" ref="mobileCarousel" @touchstart.passive="onMobileTouchStart" @touchmove.passive="onMobileTouchMove" @touchend="onMobileTouchEnd" @mouseenter="stopMobileAutoplay" @mouseleave="startMobileAutoplay">
                         <div class="overflow-hidden">
                             <div class="flex transition-transform duration-500" :style="{ transform: `translateX(-${mobileOffsetPercent.value}%)` }">
                                 <div v-for="(proj, idx) in mobileOrderedProjects" :key="`mproj-${proj.id}-${idx}`" class="min-w-full px-3">
-                                    <div class="group bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer" @click="showProjectDetails(proj)">
+                                    <div class="group bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer" @click="showProjectDetails(proj)">
                                         <div class="relative h-48 bg-gray-200 overflow-hidden">
                                             <img :src="proj.image" :alt="proj.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
@@ -39,16 +39,29 @@
                                             <div v-if="proj.is_featured" class="absolute top-3 right-3 z-10"><span class="bg-yellow-500 text-white px-2 py-1 text-xs font-medium rounded-full">⭐ Destacado</span></div>
                                         </div>
                                         <div class="p-6">
-                                            <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors duration-300">{{ proj.name }}</h3>
-                                            <p class="text-gray-600 mb-4 line-clamp-3">{{ proj.description }}</p>
+                                            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">{{ proj.name }}</h3>
+                                            <p class="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">{{ proj.description }}</p>
                                             <div class="mb-4">
                                                 <div class="flex flex-wrap gap-2">
                                                     <span v-for="tech in proj.technologies.slice(0,4)" :key="tech.id" :style="{ backgroundColor: tech.color + '20', color: tech.color }" class="px-2 py-1 text-xs font-medium rounded-full flex items-center"><i :class="tech.icon" class="mr-1"></i>{{ tech.name }}</span>
-                                                    <span v-if="proj.technologies.length > 4" class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">+{{ proj.technologies.length - 4 }}</span>
+                                                    <span v-if="proj.technologies.length > 4" class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-200">+{{ proj.technologies.length - 4 }}</span>
                                                 </div>
                                             </div>
-                                            <div v-if="proj.features && proj.features.length > 0" class="mb-4"><h4 class="text-sm font-medium text-gray-700 mb-2">Características:</h4><ul class="text-sm text-gray-600 space-y-1"><li v-for="feature in proj.features.slice(0, 3)" :key="feature" class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>{{ feature }}</li></ul></div>
-                                            <div v-if="proj.url || proj.repository" class="flex space-x-3 mt-4"><a v-if="proj.url" :href="proj.url" target="_blank" @click.stop class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200">Ver</a><a v-if="proj.repository" :href="proj.repository" target="_blank" @click.stop class="flex-1 bg-gray-800 hover:bg-gray-900 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200">Código</a></div>
+                                                <div v-if="proj.features && proj.features.length > 0" class="mb-4">
+                                                    <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Características:</h4>
+                                                    <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-2">
+                                                        <li v-for="feature in proj.features.slice(0, 3)" :key="feature" class="flex items-start">
+                                                            <svg class="w-4 h-4 text-green-600 dark:text-emerald-400 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                            <span class="leading-relaxed text-gray-800 dark:text-gray-100">{{ feature }}</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            <div v-if="proj.url || proj.repository" class="flex space-x-3 mt-4">
+                                                <a v-if="proj.url" :href="proj.url" target="_blank" @click.stop class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">Ver</a>
+                                                <a v-if="proj.repository" :href="proj.repository" target="_blank" @click.stop class="flex-1 bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">Código</a>
+                                            </div>
                                             <div class="mt-4 text-center"><p class="text-xs text-gray-400 group-hover:text-indigo-500 transition-colors duration-300">Click para ver detalles completos</p></div>
                                         </div>
                                     </div>
@@ -58,10 +71,10 @@
 
                         <!-- mobile controls -->
                         <div class="absolute left-3 top-1/2 -translate-y-1/2">
-                            <button class="bg-white shadow-lg text-gray-700 rounded-full p-2" @click="mobilePrev">‹</button>
+                            <button class="bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-2" @click="mobilePrev">‹</button>
                         </div>
                         <div class="absolute right-3 top-1/2 -translate-y-1/2">
-                            <button class="bg-white shadow-lg text-gray-700 rounded-full p-2" @click="mobileNext">›</button>
+                            <button class="bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-2" @click="mobileNext">›</button>
                         </div>
                         <!-- pagination dots -->
                         <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
@@ -76,7 +89,7 @@
                         <div class="flex justify-center items-stretch mx-auto w-full xl:max-w-6xl">
                             <div v-for="(p, i) in visibleProjects" :key="`proj-${p.id}-${i}`" class="w-1/3 px-3">
                                 <!-- keep card markup unchanged visually -->
-                                <div class="group bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer" @click="showProjectDetails(p)">
+                                <div class="group bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer" @click="showProjectDetails(p)">
                                     <div class="relative h-48 bg-gray-200 overflow-hidden">
                                         <img :src="p.image" :alt="p.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
@@ -90,26 +103,37 @@
                                         <div class="absolute top-3 left-3 z-10"><span :class="['px-3 py-1 text-xs font-medium rounded-full', getStatusBadgeClass(p.status)]">{{ getStatusLabel(p.status) }}</span></div>
                                         <div v-if="p.is_featured" class="absolute top-3 right-3 z-10"><span class="bg-yellow-500 text-white px-2 py-1 text-xs font-medium rounded-full">⭐ Destacado</span></div>
                                     </div>
-                                    <div class="p-6">
-                                        <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors duration-300">{{ p.name }}</h3>
-                                        <p class="text-gray-600 mb-4 line-clamp-3">{{ p.description }}</p>
+                                        <div class="p-6">
+                                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">{{ p.name }}</h3>
+                                        <p class="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">{{ p.description }}</p>
                                         <div class="mb-4">
                                             <div class="flex flex-wrap gap-2">
                                                 <span v-for="tech in p.technologies.slice(0,4)" :key="tech.id" :style="{ backgroundColor: tech.color + '20', color: tech.color }" class="px-2 py-1 text-xs font-medium rounded-full flex items-center"><i :class="tech.icon" class="mr-1"></i>{{ tech.name }}</span>
                                                 <span v-if="p.technologies.length > 4" class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">+{{ p.technologies.length - 4 }}</span>
                                             </div>
                                         </div>
-                                        <div v-if="p.features && p.features.length > 0" class="mb-4"><h4 class="text-sm font-medium text-gray-700 mb-2">Características:</h4><ul class="text-sm text-gray-600 space-y-1"><li v-for="feature in p.features.slice(0, 3)" :key="feature" class="flex items-center"><svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>{{ feature }}</li></ul></div>
-                                        <div v-if="p.url || p.repository" class="flex space-x-3 mt-4"><a v-if="p.url" :href="p.url" target="_blank" @click.stop class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200">Ver Proyecto</a><a v-if="p.repository" :href="p.repository" target="_blank" @click.stop class="flex-1 bg-gray-800 hover:bg-gray-900 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200">Código</a></div>
-                                        <div class="mt-4 text-center"><p class="text-xs text-gray-400 group-hover:text-indigo-500 transition-colors duration-300">Click para ver detalles completos</p></div>
+                                        <div v-if="p.features && p.features.length > 0" class="mb-4">
+                                            <h4 class="text-sm font-semibold text-gray-100 dark:text-gray-100 mb-2">Características:</h4>
+                                            <ul class="text-sm text-gray-200 dark:text-gray-200 space-y-2">
+                                                <li v-for="feature in p.features.slice(0, 3)" :key="feature" class="flex items-start">
+                                                    <svg class="w-4 h-4 text-green-600 dark:text-emerald-300 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                                    <span class="leading-relaxed text-gray-100 dark:text-gray-100">{{ feature }}</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div v-if="p.url || p.repository" class="flex space-x-3 mt-4">
+                                            <a v-if="p.url" :href="p.url" target="_blank" @click.stop class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">Ver Proyecto</a>
+                                            <a v-if="p.repository" :href="p.repository" target="_blank" @click.stop class="flex-1 bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">Código</a>
+                                        </div>
+                                        <div class="mt-4 text-center"><p class="text-xs text-gray-400 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors duration-300">Click para ver detalles completos</p></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Controls -->
-                        <button class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3" @click="prev" aria-label="Anterior">‹</button>
-                        <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3" @click="next" aria-label="Siguiente">›</button>
+                        <button class="absolute left-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3" @click="prev" aria-label="Anterior">‹</button>
+                        <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3" @click="next" aria-label="Siguiente">›</button>
                     </div>
                 </div>
             </div>
@@ -268,8 +292,14 @@ const getStatusLabel = (status) => {
     return map[status] || 'Desconocido'
 }
 const getStatusBadgeClass = (status) => {
-    const map = { development: 'bg-blue-100 text-blue-800', deployed: 'bg-green-100 text-green-800', paused: 'bg-orange-100 text-orange-800', completed: 'bg-purple-100 text-purple-800' }
-    return map[status] || 'bg-gray-100 text-gray-800'
+    // Devuelve clases pensadas para ambos temas. Usamos bg-... dark:bg-... text-... dark:text-...
+    const map = {
+        development: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
+        deployed: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
+        paused: 'bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200',
+        completed: 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200'
+    }
+    return map[status] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
 }
 
 const showProjectDetails = (project) => { selectedProject.value = project; showModal.value = true }

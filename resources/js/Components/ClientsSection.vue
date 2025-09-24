@@ -1,17 +1,17 @@
 <template>
-  <section id="clients" class="py-16 bg-gray-50">
+  <section id="clients" class="py-16 bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="relative mb-10">
         <div class="text-center">
-          <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">Nuestros Clientes</h2>
-          <p class="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">Aliados estratégicos que confían en nuestra visión tecnológica para convertir sus desafíos en soluciones digitales</p>
+          <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight mb-3">Nuestros Clientes</h2>
+          <p class="text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Aliados estratégicos que confían en nuestra visión tecnológica para convertir sus desafíos en soluciones digitales</p>
         </div>
 
         <!-- Navigation arrows: absolute to the top-right so title stays perfectly centered -->
-        <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+            <div class="absolute inset-y-0 right-0 flex items-center pr-4">
           <div class="hidden md:flex items-center space-x-2">
-            <button @click="prev" class="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-700 hover:bg-indigo-50">‹</button>
-            <button @click="next" class="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-gray-700 hover:bg-indigo-50">›</button>
+            <button @click="prev" class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 shadow flex items-center justify-center text-gray-700 dark:text-gray-100 hover:bg-indigo-50 dark:hover:bg-indigo-900">‹</button>
+            <button @click="next" class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 shadow flex items-center justify-center text-gray-700 dark:text-gray-100 hover:bg-indigo-50 dark:hover:bg-indigo-900">›</button>
           </div>
         </div>
       </div>
@@ -20,22 +20,22 @@
       <div class="hidden md:block overflow-hidden relative" @mouseenter="pauseAutoplay" @mouseleave="resumeAutoplay">
         <div ref="desktopTrackRef" class="flex transition-all duration-400 flex-nowrap" :style="desktopTrackStyle" @transitionend="onDesktopTransitionEnd">
           <div v-for="(c, i) in extendedClients" :key="'ec-' + i" class="flex-shrink-0 px-3" style="flex-basis: calc(100% / 3);">
-            <div class="card-client bg-white rounded-xl shadow-md p-6 h-full flex flex-col hover:shadow-lg hover:-translate-y-1 transition-transform duration-200">
+            <div class="card-client bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 h-full flex flex-col hover:shadow-lg hover:-translate-y-1 transition-transform duration-200">
               <div class="flex-shrink-0 flex items-center justify-center mb-4">
                 <img :src="resolveImage(c?.logo)" :alt="c?.name" class="h-28 object-contain" />
               </div>
               <div class="flex-1">
                 <div class="flex items-start justify-between">
                   <div>
-                    <h3 class="text-lg font-semibold text-gray-900">{{ c?.name || c?.company }}</h3>
-                    <p v-if="c?.industry" class="text-sm text-indigo-600">{{ c.industry }}</p>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ c?.name || c?.company }}</h3>
+                    <p v-if="c?.industry" class="text-sm text-indigo-600 dark:text-indigo-400">{{ c.industry }}</p>
                   </div>
                   <span :class="[ 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', c?.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ]">
                     {{ c?.active ? 'Activo' : 'Inactivo' }}
                   </span>
                 </div>
 
-                <p v-if="c?.description" class="text-sm text-gray-600 mt-3 line-clamp-3">{{ c.description }}</p>
+                <p v-if="c?.description" class="text-sm text-gray-600 dark:text-gray-300 mt-3 line-clamp-3">{{ c.description }}</p>
 
                 <div class="mt-4 flex items-center justify-between">
                   <div class="text-sm text-gray-500">
@@ -84,7 +84,7 @@
         >
           <div class="flex transition-transform duration-400" :style="mobileTrackStyle">
             <div v-for="(c, i) in clients" :key="c.id" class="min-w-full px-4">
-              <div class="bg-white rounded-lg shadow p-6">
+              <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div class="flex flex-col lg:flex-row">
                   <div class="flex-shrink-0 flex items-center justify-center mb-4 lg:mb-0 lg:mr-6">
                     <img :src="resolveImage(c.logo)" :alt="c.name" class="h-36 object-contain rounded" />

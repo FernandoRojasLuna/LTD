@@ -1,15 +1,15 @@
 <template>
-    <section id="about" class="py-16 bg-white">
+    <section id="about" class="py-16 bg-white dark:bg-gray-900 dark:text-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Featured Content -->
             <div v-if="featuredContent" class="mb-16">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{{ featuredContent.title }}</h2>
+                    <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">{{ featuredContent.title }}</h2>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div class="order-2 lg:order-1">
-                        <div class="prose prose-lg max-w-none text-gray-700" v-html="featuredContent.content"></div>
+                        <div class="prose prose-lg max-w-none text-gray-700 dark:text-gray-300" v-html="featuredContent.content"></div>
                     </div>
                     <div class="order-1 lg:order-2">
                         <img :src="featuredContent.image_url || featuredContent.image" :alt="featuredContent.title" class="w-full h-96 object-cover rounded-lg shadow-lg hero-standout" />
@@ -48,12 +48,12 @@
                                     class="py-4"
                             >
                                 <SwiperSlide v-for="(s, i) in swiperItems" :key="`slide-${s.id}-${i}`" class="px-4">
-                                    <div class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
                                         <div v-if="s.image" class="mb-4">
                                             <img :src="s.image_url || s.image" :alt="s.title" class="w-full h-48 object-cover rounded-lg" loading="lazy" />
                                         </div>
-                                        <h4 class="text-xl font-semibold text-gray-900 mb-3">{{ s.title }}</h4>
-                                        <div class="text-gray-600 line-clamp-3" v-html="s.content"></div>
+                                        <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">{{ s.title }}</h4>
+                                        <div class="text-gray-600 dark:text-gray-300 line-clamp-3" v-html="s.content"></div>
                                         <div class="mt-4 flex justify-center">
                                             <div class="flex justify-center">
                                                 <span :class="[getTypeColor(s.type), 'badge-corporate inline-flex items-center gap-2']">
@@ -72,8 +72,8 @@
                         </div>
 
                         <!-- mobile navigation elements for Swiper to bind -->
-                        <button ref="mobilePrevBtn" aria-hidden class="mobile-nav-btn absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 pointer-events-auto z-50">‹</button>
-                        <button ref="mobileNextBtn" aria-hidden class="mobile-nav-btn absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 pointer-events-auto z-50">›</button>
+                        <button ref="mobilePrevBtn" aria-hidden class="mobile-nav-btn absolute left-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3 pointer-events-auto z-50">‹</button>
+                        <button ref="mobileNextBtn" aria-hidden class="mobile-nav-btn absolute right-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3 pointer-events-auto z-50">›</button>
                     </div>
                 </div>
 
@@ -96,12 +96,12 @@
                                         </div>
 
                                         <!-- Right: Centered content -->
-                                        <div class="hero-body w-1/2 bg-white flex items-center justify-center p-12">
+                                        <div class="hero-body w-1/2 bg-white dark:bg-gray-800 flex items-center justify-center p-12">
                                             <div class="max-w-xl text-center">
                                                 <!-- Subtitle (only on desktop mode) -->
                                                 <p v-if="isDesktopMode" class="subtitle-corporate mb-6 text-center">{{ currentCard?.subtitle }}</p>
                                                 <!-- Content -->
-                                                <div class="text-gray-600 text-base mb-6" v-html="currentCard?.content"></div>
+                                                <div class="text-gray-600 dark:text-gray-300 text-base mb-6" v-html="currentCard?.content"></div>
                                                 <div class="flex justify-center">
                                                     <span :class="[getTypeColor(currentCard?.type), 'badge-corporate inline-flex items-center gap-2']">
                                                         <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -120,23 +120,23 @@
                             </div>
                             <div v-if="visibleCount !== 1" class="flex w-full">
                                 <div v-for="(c, i) in desktopItems" :key="`card-${c.id}-${i}`" :class="'w-1/3 px-3'">
-                                    <div class="card bg-white rounded-2xl overflow-hidden shadow-xl transition-transform transform hover:-translate-y-2 h-full flex flex-col text-left">
+                                    <div class="card bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-xl transition-transform transform hover:-translate-y-2 h-full flex flex-col text-left">
                                         <!-- existing multi-card markup -->
                                         <div v-if="c.image" class="-mx-6 -mt-6 overflow-hidden">
                                             <img :src="c.image_url || c.image" :alt="c.title" class="card-hero w-full h-52 object-cover transform transition-transform duration-300" loading="lazy" />
                                         </div>
                                         <div class="card-body px-6 py-6 flex-1 flex flex-col">
-                                            <h4 class="text-2xl font-semibold text-gray-900 mb-3">{{ c.title }}</h4>
-                                            <p v-if="isDesktopMode" class="text-sm text-indigo-600 uppercase tracking-wide font-semibold mb-3">{{ c.subtitle }}</p>
-                                            <div class="text-gray-600 text-sm mb-4 line-clamp-4" v-html="c.content"></div>
+                                            <h4 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3">{{ c.title }}</h4>
+                                            <p v-if="isDesktopMode" class="text-sm text-indigo-600 dark:text-indigo-400 uppercase tracking-wide font-semibold mb-3">{{ c.subtitle }}</p>
+                                            <div class="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-4" v-html="c.content"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="prev" aria-label="Anterior">‹</button>
-                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-lg text-gray-700 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="next" aria-label="Siguiente">›</button>
+                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="prev" aria-label="Anterior">‹</button>
+                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="next" aria-label="Siguiente">›</button>
                     </div>
                 </div>
             </div>

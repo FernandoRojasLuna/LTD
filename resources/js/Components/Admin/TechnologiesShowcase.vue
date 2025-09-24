@@ -2,15 +2,15 @@
   <section class="mt-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-6">
-        <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Tecnologías que usamos</h3>
-        <p class="text-xl text-gray-600 max-w-3xl mx-auto">Herramientas y librerías que impulsan nuestros proyectos</p>
+        <h3 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">Tecnologías que usamos</h3>
+        <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">Herramientas y librerías que impulsan nuestros proyectos</p>
       </div>
 
       <div v-if="loading" class="flex justify-center py-8">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
       </div>
 
-      <div v-else-if="technologies.length === 0" class="text-center py-8 text-gray-500">
+      <div v-else-if="technologies.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
         No hay tecnologías registradas.
       </div>
 
@@ -26,7 +26,7 @@
             <article 
               v-for="(tech, index) in duplicatedTechnologies" 
               :key="`tech-${tech.id}-${index}`"
-              class="tech-card flex-shrink-0 p-3 bg-white rounded-lg shadow-sm flex flex-col items-center"
+              class="tech-card flex-shrink-0 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm flex flex-col items-center"
               :style="cardStyle"
             >
               <div class="w-16 h-16 flex items-center justify-center mb-2">
@@ -45,7 +45,7 @@
                   {{ initials(tech.name) }}
                 </div>
               </div>
-              <div class="text-sm font-semibold text-gray-700 text-center leading-tight">
+              <div class="text-sm font-semibold text-gray-700 dark:text-gray-300 text-center leading-tight">
                 {{ tech.name }}
               </div>
             </article>
@@ -301,5 +301,20 @@ onBeforeUnmount(() => {
   background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
   z-index: 2;
   pointer-events: none;
+}
+
+/* Dark mode adjustments: reduce white fades and adapt hover shadow */
+:deep(.dark) .tech-carousel-container::before,
+:deep(.dark) .tech-carousel-container::after {
+  background: linear-gradient(to right, rgba(17,17,17,1), rgba(17,17,17,0));
+}
+
+:deep(.dark) .tech-card {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+}
+
+:deep(.dark) .tech-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
 }
 </style>
