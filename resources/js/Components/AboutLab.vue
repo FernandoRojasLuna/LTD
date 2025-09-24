@@ -9,7 +9,8 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div class="order-2 lg:order-1">
-                        <div class="prose prose-lg max-w-none text-gray-700 dark:text-gray-300" v-html="featuredContent.content"></div>
+                        <!-- Preserve newlines and ensure left-aligned text so featured content matches admin display -->
+                        <div class="prose prose-lg max-w-none text-gray-700 dark:text-gray-300 whitespace-pre-line text-left" v-html="featuredContent.content"></div>
                     </div>
                     <div class="order-1 lg:order-2">
                         <img :src="featuredContent.image_url || featuredContent.image" :alt="featuredContent.title" class="w-full h-96 object-cover rounded-lg shadow-lg hero-standout" />
@@ -53,7 +54,8 @@
                                             <img :src="s.image_url || s.image" :alt="s.title" class="w-full h-48 object-cover rounded-lg" loading="lazy" />
                                         </div>
                                         <h4 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">{{ s.title }}</h4>
-                                        <div class="text-gray-600 dark:text-gray-300 line-clamp-3" v-html="s.content"></div>
+                                        <!-- Preserve newlines and align left so content matches admin display -->
+                                        <div class="text-gray-600 dark:text-gray-300 whitespace-pre-line text-left" v-html="s.content"></div>
                                         <div class="mt-4 flex justify-center">
                                             <div class="flex justify-center">
                                                 <span :class="[getTypeColor(s.type), 'badge-corporate inline-flex items-center gap-2']">
@@ -95,13 +97,13 @@
                                             </div>
                                         </div>
 
-                                        <!-- Right: Centered content -->
-                                        <div class="hero-body w-1/2 bg-white dark:bg-gray-800 flex items-center justify-center p-12">
-                                            <div class="max-w-xl text-center">
+                                        <!-- Right: Left-aligned content to match admin formatting -->
+                                        <div class="hero-body w-1/2 bg-white dark:bg-gray-800 flex items-center p-12">
+                                            <div class="max-w-xl text-left w-full">
                                                 <!-- Subtitle (only on desktop mode) -->
-                                                <p v-if="isDesktopMode" class="subtitle-corporate mb-6 text-center">{{ currentCard?.subtitle }}</p>
-                                                <!-- Content -->
-                                                <div class="text-gray-600 dark:text-gray-300 text-base mb-6" v-html="currentCard?.content"></div>
+                                                <p v-if="isDesktopMode" class="subtitle-corporate mb-6 text-left">{{ currentCard?.subtitle }}</p>
+                                                <!-- Content: preserve newlines and left-align -->
+                                                <div class="text-gray-600 dark:text-gray-300 text-base mb-6 whitespace-pre-line" v-html="currentCard?.content"></div>
                                                 <div class="flex justify-center">
                                                     <span :class="[getTypeColor(currentCard?.type), 'badge-corporate inline-flex items-center gap-2']">
                                                         <svg class="badge-icon w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -125,18 +127,18 @@
                                         <div v-if="c.image" class="-mx-6 -mt-6 overflow-hidden">
                                             <img :src="c.image_url || c.image" :alt="c.title" class="card-hero w-full h-52 object-cover transform transition-transform duration-300" loading="lazy" />
                                         </div>
-                                        <div class="card-body px-6 py-6 flex-1 flex flex-col">
+                                            <div class="card-body px-6 py-6 flex-1 flex flex-col">
                                             <h4 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3">{{ c.title }}</h4>
                                             <p v-if="isDesktopMode" class="text-sm text-indigo-600 dark:text-indigo-400 uppercase tracking-wide font-semibold mb-3">{{ c.subtitle }}</p>
-                                            <div class="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-4" v-html="c.content"></div>
+                                            <div class="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-4 whitespace-pre-line text-left" v-html="c.content"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="prev" aria-label="Anterior">‹</button>
-                        <button :disabled="!canNavigate" :aria-disabled="!canNavigate" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed" @click="next" aria-label="Siguiente">›</button>
+                        <button :aria-disabled="!canNavigate" :class="[{ 'opacity-50': !canNavigate }, 'absolute left-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3']" @click="prev" aria-label="Anterior">‹</button>
+                        <button :aria-disabled="!canNavigate" :class="[{ 'opacity-50': !canNavigate }, 'absolute right-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3']" @click="next" aria-label="Siguiente">›</button>
                     </div>
                 </div>
             </div>
@@ -245,7 +247,8 @@ const smallDelayMs = 3000
 const largeDelayMs = 6000
 const direction = ref('next')
 const canNavigate = ref(true)
-const navigationLockMs = 4000
+// keep lock short so users can rapidly navigate if they want
+const navigationLockMs = 650
 
 // Swiper instance ref (for controlling slides from outside)
 const swiperRef = ref(null)
@@ -581,7 +584,15 @@ const forceResumeAutoplay = () => {
 }
 
 const next = () => {
-    if (!canNavigate.value) return
+    // if navigation is temporarily disabled, still allow user to nudge the Swiper instance
+    if (!canNavigate.value) {
+        try {
+            if (swiperRef.value && typeof swiperRef.value.slideNext === 'function') {
+                swiperRef.value.slideNext()
+            }
+        } catch (e) { /* ignore */ }
+        return
+    }
     if (!contents.value || contents.value.length <= 1) return
     direction.value = 'next'
     // If not desktop (Swiper active), prefer controlling the swiper instance explicitly
@@ -625,7 +636,15 @@ const next = () => {
 }
 
 const prev = () => {
-    if (!canNavigate.value) return
+    // if navigation is temporarily disabled, still allow user to nudge the Swiper instance
+    if (!canNavigate.value) {
+        try {
+            if (swiperRef.value && typeof swiperRef.value.slidePrev === 'function') {
+                swiperRef.value.slidePrev()
+            }
+        } catch (e) { /* ignore */ }
+        return
+    }
     if (!contents.value || contents.value.length <= 1) return
     direction.value = 'prev'
     if (!isDesktopMode.value) {
@@ -673,11 +692,16 @@ const onSlideChangeStart = () => {
 
 const onSlideChangeEnd = () => {
     // allow any additional small adjustments after transition
+    // ensure navigation is re-enabled when swiper finishes moving
+    try { canNavigate.value = true } catch (e) { /* ignore */ }
 }
 
 const lockNavigation = () => {
+    // briefly disable navigation to avoid accidental multi-clicks during transition
     canNavigate.value = false
-    setTimeout(() => { canNavigate.value = true }, navigationLockMs)
+    // always clear any previous timer to avoid prolonging lock
+    try { if (lockNavigation._timer) clearTimeout(lockNavigation._timer) } catch (e) {}
+    lockNavigation._timer = setTimeout(() => { canNavigate.value = true; lockNavigation._timer = null }, navigationLockMs)
 }
 
 onBeforeUnmount(() => {

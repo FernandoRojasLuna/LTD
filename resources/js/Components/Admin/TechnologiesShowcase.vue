@@ -4,6 +4,8 @@
       <div class="text-center mb-6">
         <h3 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">Tecnologías que usamos</h3>
         <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">Herramientas y librerías que impulsan nuestros proyectos</p>
+        <!-- debug/status: show count so we can tell if data arrived -->
+        <p class="text-sm text-gray-500 mt-2">Tecnologías cargadas: <strong>{{ technologies.length }}</strong> <span v-if="loading">(cargando...)</span></p>
       </div>
 
       <div v-if="loading" class="flex justify-center py-8">
@@ -157,6 +159,7 @@ const load = async () => {
   loading.value = true
   try {
     const data = await getActiveTechnologies()
+    console.debug('[TechnologiesShowcase] fetched', data)
     technologies.value = normalizeIcons(data || [])
   } catch (error) {
     console.error('Error loading technologies:', error)
@@ -183,15 +186,16 @@ onBeforeUnmount(() => {
 .tech-carousel-container {
   overflow: hidden;
   position: relative;
+  min-height: 88px; /* asegurar espacio para las tarjetas incluso si track calcula mal su alto */
 }
 
 .tech-track {
-  position: absolute; /* evitar que el track afecte al flujo del documento (no expanda la tabla) */
-  left: 0;
-  top: 0;
+  /* dejar el track en el flujo normal para que su altura sea la de las tarjetas
+     (position absolute causaba que el contenedor tuviera altura 0 en algunos layouts) */
+  position: relative;
   display: flex;
   align-items: center;
-  height: 100%;
+  min-height: 72px; /* garantía mínima para que las tarjetas sean visibles */
   animation: slideLeft var(--animation-duration, 25s) linear infinite;
   will-change: transform;
 }
