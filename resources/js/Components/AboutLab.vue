@@ -186,7 +186,7 @@
                     <!-- Trust logos / proof with subtle motion and improved layout -->
                     <div class="trust-row-adv mt-6 border-t border-white/12 pt-6">
                         <div class="flex items-center justify-center gap-3 md:gap-6 mb-3">
-                            <span class="trust-text text-sm text-indigo-100/80">Confiado por</span>
+                            <span class="trust-text text-sm text-gray-600 dark:text-indigo-100/80">Confiado por</span>
                         </div>
 
                         <div class="trust-logos-adv w-full max-w-4xl mx-auto flex justify-center items-center">
