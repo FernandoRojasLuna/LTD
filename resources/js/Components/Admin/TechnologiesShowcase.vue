@@ -26,15 +26,15 @@
             <article 
               v-for="(tech, index) in duplicatedTechnologies" 
               :key="`tech-${tech.id}-${index}`"
-              class="tech-card flex-shrink-0 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm flex flex-col items-center"
+              class="tech-card flex-shrink-0 p-3 bg-white dark:bg-transparent rounded-lg shadow-sm flex flex-col items-center"
               :style="cardStyle"
             >
-              <div class="w-16 h-16 flex items-center justify-center mb-2">
+              <div class="w-16 h-16 flex items-center justify-center mb-2 icon-wrap">
                 <img 
                   v-if="isImageUrl(tech.icon)" 
                   :src="tech.icon" 
                   :alt="tech.name" 
-                  class="w-12 h-12 object-contain" 
+                  class="w-12 h-12 object-contain tech-icon" 
                 />
                 <i 
                   v-else-if="tech.icon" 
@@ -186,6 +186,12 @@ onBeforeUnmount(() => {
 }
 
 .tech-track {
+  position: absolute; /* evitar que el track afecte al flujo del documento (no expanda la tabla) */
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
   animation: slideLeft var(--animation-duration, 25s) linear infinite;
   will-change: transform;
 }
@@ -316,5 +322,37 @@ onBeforeUnmount(() => {
 :deep(.dark) .tech-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+}
+
+/* Overrides: ocultar el fade lateral (pseudo-elementos) */
+.tech-track::before,
+.tech-track::after,
+.tech-carousel-container::before,
+.tech-carousel-container::after {
+  display: none !important;
+  background: none !important;
+}
+
+/* Ajustes para iconos con fondo transparente */
+.icon-wrap {
+  background: transparent; /* asegurar sin fondo */
+  border-radius: 0.5rem;
+}
+
+.tech-icon {
+  background: transparent;
+  display: block;
+  /* Añadir un ligero drop-shadow para separar el icono del fondo oscuro sin crear ruido */
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));
+}
+
+:deep(.dark) .tech-icon {
+  /* en modo oscuro, el shadow puede ser más tenue o más marcado según prefieras */
+  filter: drop-shadow(0 8px 14px rgba(0,0,0,0.6));
+}
+
+:deep(.dark) .tech-card {
+  /* mantener el card background transparente en dark para que los iconos sin fondo no parezcan 'cuadrados' */
+  background: transparent;
 }
 </style>
