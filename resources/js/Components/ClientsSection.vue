@@ -27,8 +27,8 @@
               <div class="flex-1">
                 <div class="flex items-start justify-between">
                   <div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ c?.name || c?.company }}</h3>
-                    <p v-if="c?.industry" class="text-sm text-indigo-600 dark:text-indigo-400">{{ c.industry }}</p>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ c?.name || c?.company }}</h3>
+              <p v-if="c?.industry" class="text-sm text-indigo-600 dark:text-indigo-400">{{ c.industry }}</p>
                   </div>
                   <span :class="[ 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', c?.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ]">
                     {{ c?.active ? 'Activo' : 'Inactivo' }}
@@ -53,10 +53,10 @@
                   </div>
                 </div>
 
-                <div v-if="c?.testimonial" class="mt-4 bg-gray-50 p-3 rounded">
-                  <p class="text-sm text-gray-600 italic">"{{ c.testimonial }}"</p>
-                  <p v-if="c?.testimonial_author" class="text-sm font-medium text-gray-800 mt-2">- {{ c.testimonial_author }}</p>
-                  <p v-if="c?.testimonial_position" class="text-xs text-gray-500">{{ c.testimonial_position }}</p>
+                <div v-if="c?.testimonial" class="mt-4 bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                  <p class="text-sm text-gray-600 dark:text-gray-300 italic">"{{ c.testimonial }}"</p>
+                  <p v-if="c?.testimonial_author" class="text-sm font-medium text-gray-800 dark:text-gray-100 mt-2">- {{ c.testimonial_author }}</p>
+                  <p v-if="c?.testimonial_position" class="text-xs text-gray-500 dark:text-gray-400">{{ c.testimonial_position }}</p>
                 </div>
               </div>
             </div>
@@ -77,12 +77,10 @@
       <!-- Mobile: single card view -->
       <div class="md:hidden">
         <div
+          ref="mobileContainerRef"
           class="touch-pan-x overflow-hidden"
-          @touchstart.passive="onTouchStart"
-          @touchmove.passive="onTouchMove"
-          @touchend.passive="onTouchEnd"
         >
-          <div class="flex transition-transform duration-400" :style="mobileTrackStyle">
+          <div ref="mobileTrackRef" class="flex transition-transform duration-400" :style="mobileTrackStyle">
             <div v-for="(c, i) in clients" :key="c.id" class="min-w-full px-4">
               <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div class="flex flex-col lg:flex-row">
@@ -92,17 +90,17 @@
                   <div class="flex-1">
                     <div class="flex items-start justify-between">
                       <div>
-                        <h3 class="text-lg font-semibold text-gray-900">{{ c.name || c.company }}</h3>
-                        <p v-if="c.industry" class="text-sm text-indigo-600">{{ c.industry }}</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ c.name || c.company }}</h3>
+                        <p v-if="c.industry" class="text-sm text-indigo-600 dark:text-indigo-400">{{ c.industry }}</p>
                       </div>
                       <span :class="[ 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', c.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ]">{{ c.active ? 'Activo' : 'Inactivo' }}</span>
                     </div>
 
-                    <p v-if="c.description" class="text-sm text-gray-600 mt-3 line-clamp-3">{{ c.description }}</p>
+                    <p v-if="c.description" class="text-sm text-gray-600 dark:text-gray-300 mt-3 line-clamp-3">{{ c.description }}</p>
 
                     <div class="mt-3 flex items-center justify-between">
-                      <div class="text-sm text-gray-500">
-                        <a v-if="c.website" :href="c.website" target="_blank" class="hover:text-indigo-600">{{ formatWebsite(c.website) }}</a>
+                      <div class="text-sm text-gray-500 dark:text-gray-300">
+                        <a v-if="c.website" :href="c.website" target="_blank" class="hover:text-indigo-600 dark:hover:text-indigo-300">{{ formatWebsite(c.website) }}</a>
                       </div>
                       <div class="flex items-center space-x-1">
                         <template v-for="n in 5" :key="n">
@@ -116,10 +114,10 @@
                       </div>
                     </div>
 
-                    <div v-if="c.testimonial" class="mt-3 bg-gray-50 p-3 rounded">
-                      <p class="text-sm text-gray-600 italic">"{{ c.testimonial }}"</p>
-                      <p v-if="c.testimonial_author" class="text-sm font-medium text-gray-800 mt-2">- {{ c.testimonial_author }}</p>
-                      <p v-if="c.testimonial_position" class="text-xs text-gray-500">{{ c.testimonial_position }}</p>
+                    <div v-if="c.testimonial" class="mt-3 bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                      <p class="text-sm text-gray-600 dark:text-gray-300 italic">"{{ c.testimonial }}"</p>
+                      <p v-if="c.testimonial_author" class="text-sm font-medium text-gray-800 dark:text-gray-100 mt-2">- {{ c.testimonial_author }}</p>
+                      <p v-if="c.testimonial_position" class="text-xs text-gray-500 dark:text-gray-400">{{ c.testimonial_position }}</p>
                     </div>
                   </div>
                 </div>
@@ -184,30 +182,57 @@ function pauseAutoplay() { stopAutoplay() }
 function resumeAutoplay() { startAutoplay() }
 
 function setIndex(i) {
-  const n = clients.value.length || 1
+  const n = Math.max(clients.value.length, 1)
+  // If we're on mobile, the index maps directly to mobileIndex
+  if (isMobile.value) {
+    mobileIndex.value = ((i % n) + n) % n
+    return
+  }
   // set index to point to the real item in the extended array (offset by head length = visible)
   index.value = i + visible
 }
 
 const currentRealIndex = computed(() => {
-  const n = clients.value.length || 1
+  const n = Math.max(clients.value.length, 1)
+  if (isMobile.value) return ((mobileIndex.value % n) + n) % n
   // map extended index to real index
   const real = (index.value - visible) % n
   return ((real % n) + n) % n
 })
 
 function prev() {
+  if (isMobile.value) {
+    mobileIndex.value = (mobileIndex.value - 1 + Math.max(1, clients.value.length)) % Math.max(1, clients.value.length)
+    return
+  }
   index.value = index.value - 1
 }
 
 function next() {
+  if (isMobile.value) {
+    mobileIndex.value = (mobileIndex.value + 1) % Math.max(1, clients.value.length)
+    return
+  }
   index.value = index.value + 1
 }
+
+// detect mobile breakpoint (Tailwind md = 768px)
+const isMobile = ref(false)
+let _mq = null
+
 
 // Mobile swipe
 const touchStartX = ref(0)
 const touchDeltaX = ref(0)
 const mobileIndex = ref(0)
+const mobileContainerRef = ref(null)
+const mobileTrackRef = ref(null)
+let _documentTouchHandler = null
+
+// mobile touch detection state
+const mobileIsDragging = ref(false)
+const mobileStartY = ref(0)
+const mobileHorizontalDetected = ref(false)
 
 function onTouchStart(e) {
   touchStartX.value = e.touches[0].clientX
@@ -224,6 +249,95 @@ function onTouchEnd() {
     mobileIndex.value = (mobileIndex.value + 1) % Math.max(1, clients.value.length)
   }
   touchDeltaX.value = 0
+}
+
+function mobileTouchStart(e) {
+  if (!e.touches || e.touches.length > 1) return
+  mobileIsDragging.value = true
+  mobileHorizontalDetected.value = false
+  touchStartX.value = e.touches[0].clientX
+  mobileStartY.value = e.touches[0].clientY
+  touchDeltaX.value = 0
+  // attach a document-level touchmove with passive:false as a fallback so we always get move events
+  try {
+    _documentTouchHandler = function (ev) { mobileTouchMove(ev) }
+    document.addEventListener('touchmove', _documentTouchHandler, { passive: false })
+  } catch (err) {
+    try { document.addEventListener('touchmove', _documentTouchHandler) } catch (e) {}
+  }
+}
+
+function mobileTouchMove(e) {
+  if (!mobileIsDragging.value || !e.touches || e.touches.length > 1) return
+  const dx = e.touches[0].clientX - touchStartX.value
+  const dy = e.touches[0].clientY - mobileStartY.value
+
+  if (!mobileHorizontalDetected.value) {
+    // determine intent: horizontal swipe vs vertical scroll
+    if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+      mobileHorizontalDetected.value = true
+    } else if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {
+      // vertical scroll - do not preventDefault, allow page to scroll
+      mobileIsDragging.value = false
+      return
+    } else {
+      return
+    }
+  }
+
+  // if horizontal detected, prevent vertical scroll and track dx
+  e.preventDefault()
+  touchDeltaX.value = dx
+  // apply visual translate while dragging
+  try {
+    const container = mobileContainerRef.value
+    const track = mobileTrackRef.value
+    if (container && track) {
+      const w = container.clientWidth || 1
+      const basePercent = -mobileIndex.value * 100
+      const deltaPercent = (dx / w) * 100
+      track.style.transition = 'none'
+      track.style.transform = `translateX(${basePercent + deltaPercent}%)`
+    }
+  } catch (err) {}
+}
+
+function mobileTouchEnd() {
+  if (!mobileIsDragging.value && !mobileHorizontalDetected.value) return
+  mobileIsDragging.value = false
+  const dx = touchDeltaX.value
+  if (dx > 50) {
+    mobileIndex.value = (mobileIndex.value - 1 + clients.value.length) % Math.max(1, clients.value.length)
+  } else if (dx < -50) {
+    mobileIndex.value = (mobileIndex.value + 1) % Math.max(1, clients.value.length)
+  }
+  // animate to final index
+  try {
+    const track = mobileTrackRef.value
+    if (track) {
+      track.style.transition = 'transform 320ms cubic-bezier(.2,.8,.2,1)'
+      track.style.transform = `translateX(${-mobileIndex.value * 100}%)`
+      // after animation, clear inline styles so computed style is authoritative
+      setTimeout(() => {
+        if (track) {
+          track.style.transition = ''
+          track.style.transform = ''
+        }
+      }, 360)
+    }
+  } catch (err) {}
+  touchDeltaX.value = 0
+  mobileHorizontalDetected.value = false
+  // remove document-level fallback
+  try {
+    if (_documentTouchHandler) {
+      document.removeEventListener('touchmove', _documentTouchHandler, { passive: false })
+      document.removeEventListener('touchmove', _documentTouchHandler)
+      _documentTouchHandler = null
+    }
+  } catch (err) {
+    _documentTouchHandler = null
+  }
 }
 
 const mobileTrackStyle = computed(() => ({
@@ -280,16 +394,87 @@ function resolveImage(url) {
 onMounted(() => {
   fetchClients()
   startAutoplay()
+  // setup media query to detect mobile (below md = 768px)
+  try {
+    _mq = window.matchMedia('(max-width: 767px)')
+    const mqHandler = (ev) => {
+      const prev = isMobile.value
+      isMobile.value = ev.matches
+      // sync indices when switching modes so position stays consistent
+      try {
+        const n = Math.max(clients.value.length, 1)
+        if (prev !== isMobile.value) {
+          if (isMobile.value) {
+            // moved to mobile: map extended index to mobile index
+            mobileIndex.value = ((index.value - visible) % n + n) % n
+          } else {
+            // moved to desktop: map mobile index into extended index space
+            index.value = mobileIndex.value + visible
+            // ensure transitions are enabled
+            isTransitioning.value = true
+          }
+        }
+      } catch (err) {}
+    }
+    // initialize
+    isMobile.value = _mq.matches
+    // listen
+    if (_mq.addEventListener) _mq.addEventListener('change', mqHandler)
+    else _mq.addListener(mqHandler)
+    // store for cleanup
+    _mq._handler = mqHandler
+  } catch (err) {
+    isMobile.value = false
+  }
+  // attach native touch listeners for mobile container to allow proper vertical scroll handling
+  nextTick(() => {
+    const c = mobileContainerRef?.value
+    if (c && c.addEventListener) {
+      try {
+        c.addEventListener('touchstart', mobileTouchStart, { passive: true })
+        c.addEventListener('touchmove', mobileTouchMove, { passive: false })
+        c.addEventListener('touchend', mobileTouchEnd, { passive: true })
+        c.addEventListener('touchcancel', mobileTouchEnd, { passive: true })
+      } catch (err) {
+        c.addEventListener('touchstart', mobileTouchStart)
+        c.addEventListener('touchmove', mobileTouchMove)
+        c.addEventListener('touchend', mobileTouchEnd)
+        c.addEventListener('touchcancel', mobileTouchEnd)
+      }
+    }
+  })
 })
 
 onUnmounted(() => {
   stopAutoplay()
+  const c = mobileContainerRef?.value
+  if (c && c.removeEventListener) {
+    try {
+      c.removeEventListener('touchstart', mobileTouchStart, { passive: true })
+      c.removeEventListener('touchmove', mobileTouchMove, { passive: false })
+      c.removeEventListener('touchend', mobileTouchEnd, { passive: true })
+      c.removeEventListener('touchcancel', mobileTouchEnd, { passive: true })
+    } catch (err) {
+      c.removeEventListener('touchstart', mobileTouchStart)
+      c.removeEventListener('touchmove', mobileTouchMove)
+      c.removeEventListener('touchend', mobileTouchEnd)
+      c.removeEventListener('touchcancel', mobileTouchEnd)
+    }
+  }
+  // cleanup media query
+  try {
+    if (_mq) {
+      if (_mq.removeEventListener) _mq.removeEventListener('change', _mq._handler)
+      else _mq.removeListener(_mq._handler)
+      _mq = null
+    }
+  } catch (err) {}
 })
 </script>
 
 <style scoped>
 /* small helpers */
-.touch-pan-x { -webkit-overflow-scrolling: touch; }
+.touch-pan-x { -webkit-overflow-scrolling: touch; touch-action: pan-y; -ms-touch-action: pan-y; }
 
 /* Card styles */
 .card-client {
