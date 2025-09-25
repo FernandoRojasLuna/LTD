@@ -32,59 +32,84 @@ const submit = () => {
 <template>
     <Head title="Log in" />
 
-    <AuthenticationCard>
-        <template #logo>
-            <AuthenticationCardLogo />
-        </template>
+    <!-- Corporate-style centered layout -->
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 via-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="w-full max-w-md">
+            <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transform transition-transform duration-300 hover:scale-[1.003]">
+                <!-- top accent bar -->
+                <div class="h-2 bg-gradient-to-r from-indigo-600 via-sky-500 to-emerald-500"></div>
+                <div class="px-8 py-8 sm:px-10 sm:py-10">
+                    <div class="flex flex-col items-center mb-6">
+                        <div class="bg-white rounded-full p-3 shadow-lg -mt-12 border border-gray-100">
+                            <!-- larger logo circle -->
+                            <AuthenticationCardLogo class="w-16 h-16" />
+                        </div>
+                        <h2 class="mt-4 text-2xl font-extrabold text-gray-900 tracking-tight">Iniciar sesión</h2>
+                        <p class="mt-2 text-sm text-gray-500">Accede a tu panel del Laboratorio</p>
+                    </div>
 
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
-            {{ status }}
+                    <div v-if="status" class="mb-4 font-medium text-sm text-green-600 text-center">
+                        {{ status }}
+                    </div>
+
+                    <form @submit.prevent="submit" class="space-y-4">
+                        <div>
+                            <InputLabel for="email" value="Email" />
+                            <div class="relative mt-1">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                                    <i class="fa-solid fa-envelope"></i>
+                                </span>
+                                <TextInput
+                                    id="email"
+                                    v-model="form.email"
+                                    type="email"
+                                    class="block w-full h-12 rounded-md border-gray-200 bg-white pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    required
+                                    autofocus
+                                    autocomplete="username"
+                                />
+                            </div>
+                            <InputError class="mt-2" :message="form.errors.email" />
+                        </div>
+
+                        <div>
+                            <InputLabel for="password" value="Password" />
+                            <div class="relative mt-1">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                                    <i class="fa-solid fa-lock"></i>
+                                </span>
+                                <TextInput
+                                    id="password"
+                                    v-model="form.password"
+                                    type="password"
+                                    class="block w-full h-12 rounded-md border-gray-200 bg-white pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    required
+                                    autocomplete="current-password"
+                                />
+                            </div>
+                            <InputError class="mt-2" :message="form.errors.password" />
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center">
+                                <Checkbox v-model:checked="form.remember" name="remember" />
+                                <span class="ms-2 text-sm text-gray-600 dark:text-gray-300">Recordarme</span>
+                            </label>
+
+                            <div class="text-sm">
+                                <Link v-if="canResetPassword" :href="route('password.request')" class="font-medium text-indigo-600 hover:text-indigo-500">¿Olvidaste tu contraseña?</Link>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center">
+                            <PrimaryButton class="inline-flex items-center px-6 py-3 text-sm bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-700 hover:to-sky-600 transform transition-all duration-200 shadow-lg rounded-md min-w-[180px] justify-center" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                                Iniciar sesión
+                            </PrimaryButton>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <p class="mt-6 text-center text-xs text-gray-400">© {{ new Date().getFullYear() }} Laboratorio de Transformación Digital</p>
         </div>
-
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
-                <TextInput
-                    id="email"
-                    v-model="form.email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
-
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
-                <TextInput
-                    id="password"
-                    v-model="form.password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    required
-                    autocomplete="current-password"
-                />
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
-
-            <div class="block mt-4">
-                <label class="flex items-center">
-                    <Checkbox v-model:checked="form.remember" name="remember" />
-                    <span class="ms-2 text-sm text-gray-600">Remember me</span>
-                </label>
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <Link v-if="canResetPassword" :href="route('password.request')" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Forgot your password?
-                </Link>
-
-                <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Log in
-                </PrimaryButton>
-            </div>
-        </form>
-    </AuthenticationCard>
+    </div>
 </template>

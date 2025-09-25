@@ -65,8 +65,8 @@
                         </template>
                     </button>
 
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-500 hover:text-gray-700 p-2">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" :aria-expanded="mobileMenuOpen" aria-controls="mobile-panel" class="text-gray-500 hover:text-gray-700 p-2 rounded-lg border border-transparent hover:border-gray-700/30 transition-shadow shadow-sm bg-white/0">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
@@ -75,14 +75,22 @@
         </div>
             
             <!-- Mobile menu -->
-            <div v-show="mobileMenuOpen" class="md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                    <button @click.prevent="navigateTo('home')" class="w-full text-left block text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-base font-medium">Inicio</button>
-                    <button @click.prevent="navigateTo('about')" class="w-full text-left block text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-base font-medium">Sobre Nosotros</button>
-                    <button @click.prevent="navigateTo('projects')" class="w-full text-left block text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-base font-medium">Proyectos</button>
-                    <button @click.prevent="navigateTo('staff')" class="w-full text-left block text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-base font-medium">Equipo</button>
-                    <button @click.prevent="navigateTo('clients')" class="w-full text-left block text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-base font-medium">Clientes</button>
-                    <button @click.prevent="navigateTo('contact')" class="w-full text-left block text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-base font-medium">Contacto</button>
+            <!-- Floating mobile panel (small, rounded) -->
+            <div id="mobile-panel" v-show="mobileMenuOpen" class="md:hidden fixed top-16 right-4 z-50">
+                <div class="w-64 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="px-4 py-3">
+                        <button @click.prevent="navigateTo('home')" class="w-full text-left block text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm font-medium">Inicio</button>
+                        <button @click.prevent="navigateTo('about')" class="w-full text-left block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm">Sobre Nosotros</button>
+                        <button @click.prevent="navigateTo('projects')" class="w-full text-left block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm">Proyectos</button>
+                        <button @click.prevent="navigateTo('staff')" class="w-full text-left block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm">Equipo</button>
+                        <button @click.prevent="navigateTo('clients')" class="w-full text-left block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm">Clientes</button>
+                        <button @click.prevent="navigateTo('contact')" class="w-full text-left block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm">Contacto</button>
+
+                        <!-- Login CTA -->
+                        <div class="mt-3">
+                            <button @click.prevent="goToLogin" class="w-full inline-flex justify-center items-center px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow">Iniciar sesión</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -94,44 +102,55 @@
         
         <!-- Footer -->
     <footer class="bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-200">
-            <div class="max-w-5xl mx-auto py-8 px-4 sm:py-10 sm:px-6 lg:px-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start">
-                    <div class="md:col-span-1">
-                        <h3 class="text-xl font-semibold mb-2 sm:text-left text-center">Laboratorio de Transformación Digital</h3>
-                        <p class="text-gray-400 text-sm sm:text-left text-center">Innovación y tecnología para el futuro. Transformamos ideas en soluciones digitales.</p>
-                    </div>
-                    <div class="md:col-span-1">
-                        <h4 class="text-sm font-medium mb-2 text-gray-200 sm:text-left text-center">Enlaces</h4>
-                        <ul class="space-y-1 text-sm text-center sm:text-left">
-                            <li><button @click.prevent="navigateTo('about')" class="text-gray-300 hover:text-white">Sobre Nosotros</button></li>
-                            <li><button @click.prevent="navigateTo('projects')" class="text-gray-300 hover:text-white">Proyectos</button></li>
-                            <li><button @click.prevent="navigateTo('staff')" class="text-gray-300 hover:text-white">Equipo</button></li>
-                            <li><button @click.prevent="navigateTo('contact')" class="text-gray-300 hover:text-white">Contacto</button></li>
-                        </ul>
-                    </div>
-                    <div class="md:col-span-1">
-                        <h4 class="text-sm font-medium mb-2 text-gray-200 sm:text-left text-center">Contacto</h4>
-                        <p class="text-gray-300 mb-1 text-sm text-center sm:text-left">Email: <span class="text-gray-100">{{ contact.emails && contact.emails.length ? contact.emails[0] : 'info@laboratorio.com' }}</span></p>
-                        <p class="text-gray-300 mb-1 text-sm text-center sm:text-left">Teléfono: <span class="text-gray-100">{{ contact.phones && contact.phones.length ? contact.phones[0] : '+1 (555) 123-4567' }}</span></p>
-                        <div class="mt-4 flex items-center justify-center sm:justify-start space-x-2">
-                            <!-- Compact social anchors: smaller, tighter spacing -->
-                            <a :href="findSocialUrl('instagram')" target="_blank" rel="noopener" :aria-label="'Instagram'" class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
-                                <i class="fa-brands fa-instagram text-sm"></i>
-                            </a>
+    <div class="max-w-4xl mx-auto py-6 px-4 sm:py-8 sm:px-6 lg:px-6">
+            <!-- Top: title + short description (mobile only) -->
+            <div class="text-center mb-4 md:hidden">
+                <h3 class="text-lg font-semibold mb-1">Laboratorio de Transformación Digital</h3>
+                <p class="text-gray-400 text-xs mx-auto max-w-lg">Innovación y tecnología para el futuro. Transformamos ideas en soluciones digitales.</p>
+            </div>
 
-                            <a :href="findSocialUrl('facebook')" target="_blank" rel="noopener" :aria-label="'Facebook'" class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
-                                <i class="fa-brands fa-facebook-f text-sm"></i>
-                            </a>
-
-                            <a :href="findSocialUrl('tiktok')" target="_blank" rel="noopener" :aria-label="'TikTok'" class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition transform hover:-translate-y-0.5">
-                                <i class="fa-brands fa-tiktok text-sm"></i>
-                            </a>
-                        </div>
-                    </div>
+            <!-- Middle: two columns on phones, md keeps 2 columns and lg shows 3 columns (desktop restored) -->
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 items-start">
+                <!-- First column on md+ contains title + description (restores desktop layout) -->
+                <div class="hidden md:block md:col-span-1">
+                    <h3 class="text-lg font-semibold mb-1">Laboratorio de Transformación Digital</h3>
+                    <p class="text-gray-400 text-xs">Innovación y tecnología para el futuro. Transformamos ideas en soluciones digitales.</p>
                 </div>
 
+                <!-- Links column (left on small screens) -->
+                <div>
+                    <h4 class="text-sm font-medium mb-1 text-gray-200 text-left">Enlaces</h4>
+                    <ul class="grid grid-cols-1 gap-1 text-sm text-left">
+                        <li><button @click.prevent="navigateTo('about')" class="text-gray-300 hover:text-white">Sobre Nosotros</button></li>
+                        <li><button @click.prevent="navigateTo('projects')" class="text-gray-300 hover:text-white">Proyectos</button></li>
+                        <li><button @click.prevent="navigateTo('staff')" class="text-gray-300 hover:text-white">Equipo</button></li>
+                        <li><button @click.prevent="navigateTo('contact')" class="text-gray-300 hover:text-white">Contacto</button></li>
+                    </ul>
+                </div>
+
+                <!-- Contact + socials column (right on small screens) -->
+                <div>
+                    <h4 class="text-sm font-medium mb-1 text-gray-200 text-left">Contacto</h4>
+                    <p class="text-gray-300 mb-1 text-xs text-left">Email: <span class="text-gray-100">{{ contact.emails && contact.emails.length ? contact.emails[0] : 'info@laboratorio.com' }}</span></p>
+                    <p class="text-gray-300 mb-1 text-xs text-left">Teléfono: <span class="text-gray-100">{{ contact.phones && contact.phones.length ? contact.phones[0] : '+1 (555) 123-4567' }}</span></p>
+                    <div class="mt-3 flex items-center justify-start space-x-2">
+                        <a :href="findSocialUrl('instagram')" target="_blank" rel="noopener" :aria-label="'Instagram'" class="inline-flex items-center justify-center h-7 w-7 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition">
+                            <i class="fa-brands fa-instagram text-xs"></i>
+                        </a>
+
+                        <a :href="findSocialUrl('facebook')" target="_blank" rel="noopener" :aria-label="'Facebook'" class="inline-flex items-center justify-center h-7 w-7 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition">
+                            <i class="fa-brands fa-facebook-f text-xs"></i>
+                        </a>
+
+                        <a :href="findSocialUrl('tiktok')" target="_blank" rel="noopener" :aria-label="'TikTok'" class="inline-flex items-center justify-center h-7 w-7 rounded-full bg-white shadow text-gray-700 hover:bg-indigo-600 hover:text-white transition">
+                            <i class="fa-brands fa-tiktok text-xs"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
-        </footer>
+
+        </div>
+    </footer>
     </div>
 </template>
 
@@ -233,5 +252,16 @@ function navigateTo(id) {
         const base = window.location.href.split('#')[0]
         window.location.href = `${base}#${id}`
     }
+}
+
+/**
+ * Close mobile menu and navigate to login page (absolute URL for local dev).
+ */
+function goToLogin() {
+    try {
+        mobileMenuOpen.value = false
+    } catch (e) {}
+    // Absolute redirect to the local dev login page
+    window.location.href = 'http://localhost:8080/login'
 }
 </script>
