@@ -46,7 +46,7 @@
                                     @swiper="onSwiper"
                                     @slideChangeTransitionStart="onSlideChangeStart"
                                     @slideChangeTransitionEnd="onSlideChangeEnd"
-                                    class="py-4"
+                    :class="['py-4', isPhoneSingle ? 'no-mobile-arrows' : '']"
                             >
                                 <SwiperSlide v-for="(s, i) in swiperItems" :key="`slide-${s.id}-${i}`" class="px-4">
                                     <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
@@ -74,8 +74,18 @@
                         </div>
 
                         <!-- mobile navigation elements for Swiper to bind -->
-                        <button ref="mobilePrevBtn" aria-hidden class="mobile-nav-btn absolute left-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3 pointer-events-auto z-50">‹</button>
-                        <button ref="mobileNextBtn" aria-hidden class="mobile-nav-btn absolute right-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3 pointer-events-auto z-50">›</button>
+                        <button
+                            v-if="visibleCount > 2"
+                            ref="mobilePrevBtn"
+                            aria-hidden
+                            class="mobile-nav-btn absolute left-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-transparent rounded-full p-3 pointer-events-auto z-50"
+                        >‹</button>
+                        <button
+                            v-if="visibleCount > 2"
+                            ref="mobileNextBtn"
+                            aria-hidden
+                            class="mobile-nav-btn absolute right-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-transparent rounded-full p-3 pointer-events-auto z-50"
+                        >›</button>
                     </div>
                 </div>
 
@@ -137,8 +147,10 @@
                             </div>
                         </div>
 
-                        <button :aria-disabled="!canNavigate" :class="[{ 'opacity-50': !canNavigate }, 'absolute left-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3']" @click="prev" aria-label="Anterior">‹</button>
-                        <button :aria-disabled="!canNavigate" :class="[{ 'opacity-50': !canNavigate }, 'absolute right-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3']" @click="next" aria-label="Siguiente">›</button>
+                        <template v-if="isDesktopMode">
+                            <button :aria-disabled="!canNavigate" :class="[{ 'opacity-50': !canNavigate }, 'absolute left-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3']" @click="prev" aria-label="Anterior">‹</button>
+                            <button :aria-disabled="!canNavigate" :class="[{ 'opacity-50': !canNavigate }, 'absolute right-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg text-gray-700 dark:text-gray-100 rounded-full p-3']" @click="next" aria-label="Siguiente">›</button>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -427,6 +439,11 @@ const autoplayDelay = computed(() => {
     // prefer explicit desktop mode: desktop uses largeDelayMs, mobile/tablet uses smallDelayMs
     if (isDesktopMode.value) return largeDelayMs
     return smallDelayMs
+})
+
+// helper: true when we're on a phone-like viewport showing a single card
+const isPhoneSingle = computed(() => {
+    return !isDesktopMode.value && visibleCount.value === 1
 })
 
 // swiper transition speed (ms)
@@ -1156,5 +1173,16 @@ const showCarousel = computed(() => {
 /* reduce motion for users who prefer reduced-motion */
 @media (prefers-reduced-motion: reduce) {
     .cta-deco, .cta-corporate-adv, .trust-logo-circle-adv, .cta-arc, .trust-logo-img-adv { animation: none !important; transition: none !important; }
+}
+</style>
+
+<style>
+/* Force-hide swiper navigation buttons inside mobile single-card Swiper */
+.no-mobile-arrows .swiper-button-prev,
+.no-mobile-arrows .swiper-button-next {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 </style>
