@@ -155,6 +155,9 @@
                 </div>
             </div>
 
+            <!-- Projects Section -->
+        <ProjectsSection />
+
             <!-- Technologies showcase -->
             <TechnologiesShowcase />
 
@@ -242,6 +245,7 @@
 import { ref, onMounted, computed, onBeforeUnmount, watch, nextTick } from 'vue'
 import axios from 'axios'
 import TechnologiesShowcase from '@/Components/Admin/TechnologiesShowcase.vue'
+import ProjectsSection from '@/Components/ProjectsSection.vue';
 // Swiper
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css'

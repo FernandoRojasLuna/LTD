@@ -7,9 +7,10 @@
                 <!-- Left: logo -->
                 <div class="flex items-center">
                     <Link href="/" class="flex items-center space-x-3 no-underline">
-                        <img src="/images/ltd.svg" alt="LTD Logo" class="w-9 h-9 object-contain" />
+                        <!-- Logo switches between light/dark versions -->
+                        <img :src="isDark ? '/images/ltdoscuro.svg' : '/images/ltdclaro.svg'" :alt="isDark ? 'LTD Logo (oscuro)' : 'LTD Logo (claro)'" class="w-9 h-9 object-contain" />
                         <div class="leading-tight">
-                            <div class="text-2xl md:text-3xl font-extrabold tracking-tight md:tracking-tighter text-black dark:text-gray-100 uppercase font-display drop-shadow-sm">LTD</div>
+                            <div class="text-2xl md:text-3xl font-extrabold tracking-tight md:tracking-tighter text-black dark:text-gray-100 uppercase font-display drop-shadow-sm brand-font">LTD</div>
                         </div>
                     </Link>
                 </div>
@@ -20,8 +21,8 @@
                         <button @click.prevent="navigateTo('home')" class="relative text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Inicio</button>
                         <button @click.prevent="navigateTo('about')" class="relative text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Sobre Nosotros</button>
                         <button @click.prevent="navigateTo('projects')" class="relative text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Proyectos</button>
-                        <button @click.prevent="navigateTo('staff')" class="relative text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Equipo</button>
                         <button @click.prevent="navigateTo('clients')" class="relative text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Clientes</button>
+                        <button @click.prevent="navigateTo('staff')" class="relative text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Equipo</button>
                         <button @click.prevent="navigateTo('contact')" class="relative text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-[15px] font-medium transition-colors duration-300 after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-600 hover:after:w-full after:transition-all">Contacto</button>
                     </nav>
 
@@ -82,8 +83,8 @@
                         <button @click.prevent="navigateTo('home')" class="w-full text-left block text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm font-medium">Inicio</button>
                         <button @click.prevent="navigateTo('about')" class="w-full text-left block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm">Sobre Nosotros</button>
                         <button @click.prevent="navigateTo('projects')" class="w-full text-left block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm">Proyectos</button>
-                        <button @click.prevent="navigateTo('staff')" class="w-full text-left block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm">Equipo</button>
                         <button @click.prevent="navigateTo('clients')" class="w-full text-left block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm">Clientes</button>
+                        <button @click.prevent="navigateTo('staff')" class="w-full text-left block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm">Equipo</button>
                         <button @click.prevent="navigateTo('contact')" class="w-full text-left block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-2 text-sm">Contacto</button>
 
                         <!-- Login CTA -->
@@ -265,3 +266,18 @@ function goToLogin() {
     window.location.href = 'http://localhost:8080/login'
 }
 </script>
+
+<style>
+/* Local brand font: coloca Sacana.ttf en public/fonts/sakana/Sakana.ttf */
+@font-face {
+    font-family: 'Sakana';
+    src: url('/fonts/sakana/Sakana.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+.brand-font {
+    font-family: 'Sakana', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+</style>
