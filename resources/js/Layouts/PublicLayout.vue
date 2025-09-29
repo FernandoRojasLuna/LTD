@@ -262,8 +262,8 @@ function goToLogin() {
     try {
         mobileMenuOpen.value = false
     } catch (e) {}
-    // Absolute redirect to the local dev login page
-    window.location.href = 'http://localhost:8080/login'
+    // Redirige al login en el dominio actual
+    window.location.href = window.location.origin + '/login'
 }
 </script>
 
