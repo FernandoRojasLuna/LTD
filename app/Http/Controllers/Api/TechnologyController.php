@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Technology;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
 
 class TechnologyController extends Controller
 {
@@ -39,15 +38,12 @@ class TechnologyController extends Controller
             }
             $validated = $request->validate($rules);
 
-            // Si se subió un icono como archivo, guardarlo usando Storage (storage/app/public/technologies)
+            // Si se subió un icono como archivo, guardarlo en storage/app/public/technologies
             if ($request->hasFile('icon')) {
-                $file = $request->file('icon');
-                $extension = $file->getClientOriginalExtension();
+                $extension = $request->file('icon')->getClientOriginalExtension();
                 $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
-                
-                // Guardar en storage/app/public/technologies (accesible vía /storage/technologies)
-                $path = Storage::disk('public')->putFileAs('technologies', $file, $filename);
-                $validated['icon'] = $path; // Guarda 'technologies/filename.ext'
+                $path = $request->file('icon')->storeAs('technologies', $filename, 'public');
+                $validated['icon'] = 'technologies/' . $filename;
             }
 
             $technology = Technology::create($validated);
@@ -95,17 +91,13 @@ class TechnologyController extends Controller
 
             // Si se subió un nuevo icono como archivo, eliminar el anterior y guardar el nuevo
             if ($request->hasFile('icon')) {
-                // Eliminar icono anterior si existe
                 if ($technology->icon) {
-                    Storage::disk('public')->delete($technology->icon);
+                    \Storage::disk('public')->delete($technology->icon);
                 }
-                
-                // Guardar nuevo icono
-                $file = $request->file('icon');
-                $extension = $file->getClientOriginalExtension();
+                $extension = $request->file('icon')->getClientOriginalExtension();
                 $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
-                $path = Storage::disk('public')->putFileAs('technologies', $file, $filename);
-                $validated['icon'] = $path; // Guarda 'technologies/filename.ext'
+                $path = $request->file('icon')->storeAs('technologies', $filename, 'public');
+                $validated['icon'] = 'technologies/' . $filename;
             }
 
             $technology->update($validated);

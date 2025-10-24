@@ -6,7 +6,6 @@ use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Storage;
 
 class StaffController extends Controller
 {
@@ -59,15 +58,12 @@ class StaffController extends Controller
             \Log::info('StaffController.store hasFile image: ' . ($request->hasFile('image') ? 'yes' : 'no'));
             \Log::info('StaffController.store raw active input: ' . var_export($request->input('active'), true));
 
-            // Si se subió un archivo de imagen, guardarlo usando Storage (storage/app/public/staff)
+            // Si se subió un archivo de imagen, guardarlo en storage/app/public/staff
             if ($request->hasFile('image')) {
-                $file = $request->file('image');
-                $extension = $file->getClientOriginalExtension();
+                $extension = $request->file('image')->getClientOriginalExtension();
                 $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
-                
-                // Guardar en storage/app/public/staff (accesible vía /storage/staff)
-                $path = Storage::disk('public')->putFileAs('staff', $file, $filename);
-                $validated['image'] = $path; // Guarda 'staff/filename.ext'
+                $path = $request->file('image')->storeAs('staff', $filename, 'public');
+                $validated['image'] = 'staff/' . $filename;
             }
 
             $staff = Staff::create($validated);
@@ -123,19 +119,16 @@ class StaffController extends Controller
                 'order' => 'integer|min:0'
             ]);
 
-            // Si se subió una nueva imagen, eliminar la anterior y guardar la nueva
+                        // Si se subió una nueva imagen como archivo, eliminar la anterior y guardar la nueva
             if ($request->hasFile('image')) {
-                // Eliminar imagen anterior si existe
                 if ($staff->image) {
-                    Storage::disk('public')->delete($staff->image);
+                    \Storage::disk('public')->delete($staff->image);
                 }
 
-                // Guardar nueva imagen
-                $file = $request->file('image');
-                $extension = $file->getClientOriginalExtension();
+                $extension = $request->file('image')->getClientOriginalExtension();
                 $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
-                $path = Storage::disk('public')->putFileAs('staff', $file, $filename);
-                $validated['image'] = $path; // Guarda 'staff/filename.ext'
+                $path = $request->file('image')->storeAs('staff', $filename, 'public');
+                $validated['image'] = 'staff/' . $filename;
             }
 
             $staff->update($validated);

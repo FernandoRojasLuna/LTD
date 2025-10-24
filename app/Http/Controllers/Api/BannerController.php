@@ -81,11 +81,11 @@ class BannerController extends Controller
         $extension = $file->getClientOriginalExtension();
         $filename = Str::random(40) . '.' . $extension;
 
-        // Guardar en storage/app/public/banners (accesible vía /storage/banners)
-        $path = Storage::disk('public')->putFileAs('banners', $file, $filename);
+        // Guardar usando Storage disk 'public' - guarda en storage/app/public/banners
+        $path = $file->storeAs('banners', $filename, 'public');
 
-        // Retornar URL relativa
-        return '/storage/banners/' . $filename;
+        // Retornar ruta que será accesible vía /storage/banners/filename
+        return '/storage/' . $path;
     }
 
     /**
@@ -120,8 +120,9 @@ class BannerController extends Controller
         if ($request->hasFile('image')) {
             // Eliminar imagen anterior si existe y no es una URL
             if ($banner->image && !filter_var($banner->image, FILTER_VALIDATE_URL)) {
-                $imagePath = str_replace('/storage/', '', $banner->image);
-                Storage::disk('public')->delete($imagePath);
+                // Extraer el path relativo desde /storage/
+                $relativePath = str_replace('/storage/', '', $banner->image);
+                Storage::disk('public')->delete($relativePath);
             }
             
             $imagePath = $this->uploadImage($request->file('image'));
@@ -141,8 +142,9 @@ class BannerController extends Controller
     {
         // Eliminar imagen si existe y no es una URL
         if ($banner->image && !filter_var($banner->image, FILTER_VALIDATE_URL)) {
-            $imagePath = str_replace('/storage/', '', $banner->image);
-            Storage::disk('public')->delete($imagePath);
+            // Extraer el path relativo desde /storage/
+            $relativePath = str_replace('/storage/', '', $banner->image);
+            Storage::disk('public')->delete($relativePath);
         }
         
         $banner->delete();

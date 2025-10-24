@@ -7,7 +7,6 @@ use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller
 {
@@ -102,11 +101,11 @@ class ProjectController extends Controller
         $extension = $file->getClientOriginalExtension();
         $filename = Str::random(40) . '.' . $extension;
         
-        // Guardar en storage/app/public/projects (accesible vía /storage/projects)
-        $path = Storage::disk('public')->putFileAs('projects', $file, $filename);
+        // Guardar usando Storage disk 'public' - guarda en storage/app/public/projects
+        $path = $file->storeAs('projects', $filename, 'public');
 
-        // Retornar URL relativa
-        return '/storage/projects/' . $filename;
+        // Retornar ruta que será accesible vía /storage/projects/filename
+        return '/storage/' . $path;
     }
 
     /**
@@ -154,9 +153,9 @@ class ProjectController extends Controller
         if ($request->hasFile('image')) {
             // Eliminar imagen anterior si existe y no es una URL
             if ($project->image && !filter_var($project->image, FILTER_VALIDATE_URL)) {
-                // Extraer el path relativo (sin /storage/)
-                $oldPath = str_replace('/storage/', '', $project->image);
-                Storage::disk('public')->delete($oldPath);
+                // Extraer el path relativo desde /storage/
+                $relativePath = str_replace('/storage/', '', $project->image);
+                \Storage::disk('public')->delete($relativePath);
             }
             
             $imagePath = $this->uploadImage($request->file('image'));
@@ -182,8 +181,8 @@ class ProjectController extends Controller
     {
         // Eliminar imagen si existe y no es una URL
         if ($project->image && !filter_var($project->image, FILTER_VALIDATE_URL)) {
-            $imagePath = str_replace('/storage/', '', $project->image);
-            Storage::disk('public')->delete($imagePath);
+            $relativePath = str_replace('/storage/', '', $project->image);
+            \Storage::disk('public')->delete($relativePath);
         }
         
         $project->delete();
