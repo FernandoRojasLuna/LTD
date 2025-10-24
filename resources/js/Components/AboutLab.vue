@@ -320,10 +320,10 @@ const onSwiper = (swiperInstance) => {
     })
 }
 
-// Helpers for trust logos
+// Helpers for trust logos and images
 const getStorageUrl = (filename) => {
-    // public/storage is web-accessible in this project
-    return `/storage/${filename}`
+    // Images now stored in public/images (static assets)
+    return `/images/${filename}`
 }
 
 const onTrustImgError = (ev) => {
@@ -788,12 +788,11 @@ onMounted(async () => {
     startAutoplay()
 })
 
-// Trust logos: filenames stored in public/storage
+// Trust logos: filenames stored in public/images (static assets)
 const trustLogos = ref([
-    'logoGore.jpg',
-    'muniLima.jpg',
-    'muni.jpg'
-    
+    'logo1.jpg',
+    'logo2.jpg',
+    'logo3.jpg'
 ])
 
 const showCarousel = computed(() => {
