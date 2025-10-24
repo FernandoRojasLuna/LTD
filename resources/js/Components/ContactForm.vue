@@ -1,5 +1,5 @@
 <template>
-  <section id="contact" class="py-16 bg-cover bg-center dark:text-gray-100" :style="{ backgroundImage: 'url(/storage/fondo3.jpg)' }">
+  <section id="contact" class="py-16 bg-cover bg-center dark:text-gray-100" :style="{ backgroundImage: 'url(/images/fondo3.jpg)' }">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
   <div class="bg-white/95 dark:bg-white/10 backdrop-blur rounded-lg shadow-lg p-8 lg:p-12">
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
@@ -42,7 +42,7 @@
 
             <form @submit.prevent="submit" class="relative rounded overflow-hidden" novalidate>
             <!-- background image (fills the right panel) -->
-            <div class="absolute inset-0 bg-cover bg-center" :style="{ backgroundImage: 'url(/storage/fondo3.jpg)' }"></div>
+            <div class="absolute inset-0 bg-cover bg-center" :style="{ backgroundImage: 'url(/images/fondo3.jpg)' }"></div>
             <!-- dark overlay for contrast (reduced opacity) - keep subtle in both themes -->
             <div class="absolute inset-0 bg-black/10"></div>
 
