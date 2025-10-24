@@ -6,6 +6,7 @@ use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class StaffController extends Controller
 {
@@ -58,21 +59,15 @@ class StaffController extends Controller
             \Log::info('StaffController.store hasFile image: ' . ($request->hasFile('image') ? 'yes' : 'no'));
             \Log::info('StaffController.store raw active input: ' . var_export($request->input('active'), true));
 
-            // Si se subió un archivo de imagen, guardarlo en public/storage/staff
+            // Si se subió un archivo de imagen, guardarlo usando Storage (storage/app/public/staff)
             if ($request->hasFile('image')) {
-                $uploadPath = public_path('storage/staff');
-                // Diagnostic logs
-                \Log::info('StaffController.store uploadPath: ' . $uploadPath);
-                \Log::info('StaffController.store is_dir(uploadPath): ' . (is_dir($uploadPath) ? 'yes' : 'no'));
-                \Log::info('StaffController.store is_writable(uploadPath): ' . (is_writable($uploadPath) ? 'yes' : 'no'));
-                \Log::info('StaffController.store public/storage realpath: ' . @realpath(public_path('storage')));
-                if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0755, true);
-                }
-                $extension = $request->file('image')->getClientOriginalExtension();
+                $file = $request->file('image');
+                $extension = $file->getClientOriginalExtension();
                 $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
-                $request->file('image')->move($uploadPath, $filename);
-                $validated['image'] = 'staff/' . $filename;
+                
+                // Guardar en storage/app/public/staff (accesible vía /storage/staff)
+                $path = Storage::disk('public')->putFileAs('staff', $file, $filename);
+                $validated['image'] = $path; // Guarda 'staff/filename.ext'
             }
 
             $staff = Staff::create($validated);
@@ -132,20 +127,15 @@ class StaffController extends Controller
             if ($request->hasFile('image')) {
                 // Eliminar imagen anterior si existe
                 if ($staff->image) {
-                    $oldPath = public_path('storage/' . ltrim($staff->image, '/'));
-                    if (file_exists($oldPath)) {
-                        @unlink($oldPath);
-                    }
+                    Storage::disk('public')->delete($staff->image);
                 }
 
-                $uploadPath = public_path('storage/staff');
-                if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0755, true);
-                }
-                $extension = $request->file('image')->getClientOriginalExtension();
+                // Guardar nueva imagen
+                $file = $request->file('image');
+                $extension = $file->getClientOriginalExtension();
                 $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
-                $request->file('image')->move($uploadPath, $filename);
-                $validated['image'] = 'staff/' . $filename;
+                $path = Storage::disk('public')->putFileAs('staff', $file, $filename);
+                $validated['image'] = $path; // Guarda 'staff/filename.ext'
             }
 
             $staff->update($validated);

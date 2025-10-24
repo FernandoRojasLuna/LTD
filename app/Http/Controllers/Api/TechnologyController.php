@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Technology;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 
 class TechnologyController extends Controller
 {
@@ -38,16 +39,15 @@ class TechnologyController extends Controller
             }
             $validated = $request->validate($rules);
 
-            // Si se subió un icono como archivo, moverlo a public/storage/technologies
+            // Si se subió un icono como archivo, guardarlo usando Storage (storage/app/public/technologies)
             if ($request->hasFile('icon')) {
-                $uploadPath = public_path('storage/technologies');
-                if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0755, true);
-                }
-                $extension = $request->file('icon')->getClientOriginalExtension();
+                $file = $request->file('icon');
+                $extension = $file->getClientOriginalExtension();
                 $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
-                $request->file('icon')->move($uploadPath, $filename);
-                $validated['icon'] = 'technologies/' . $filename;
+                
+                // Guardar en storage/app/public/technologies (accesible vía /storage/technologies)
+                $path = Storage::disk('public')->putFileAs('technologies', $file, $filename);
+                $validated['icon'] = $path; // Guarda 'technologies/filename.ext'
             }
 
             $technology = Technology::create($validated);
@@ -95,20 +95,17 @@ class TechnologyController extends Controller
 
             // Si se subió un nuevo icono como archivo, eliminar el anterior y guardar el nuevo
             if ($request->hasFile('icon')) {
+                // Eliminar icono anterior si existe
                 if ($technology->icon) {
-                    $oldPath = public_path('storage/' . ltrim($technology->icon, '/'));
-                    if (file_exists($oldPath)) {
-                        @unlink($oldPath);
-                    }
+                    Storage::disk('public')->delete($technology->icon);
                 }
-                $uploadPath = public_path('storage/technologies');
-                if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0755, true);
-                }
-                $extension = $request->file('icon')->getClientOriginalExtension();
+                
+                // Guardar nuevo icono
+                $file = $request->file('icon');
+                $extension = $file->getClientOriginalExtension();
                 $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
-                $request->file('icon')->move($uploadPath, $filename);
-                $validated['icon'] = 'technologies/' . $filename;
+                $path = Storage::disk('public')->putFileAs('technologies', $file, $filename);
+                $validated['icon'] = $path; // Guarda 'technologies/filename.ext'
             }
 
             $technology->update($validated);

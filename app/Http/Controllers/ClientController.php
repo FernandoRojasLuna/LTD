@@ -6,6 +6,7 @@ use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class ClientController extends Controller
 {
@@ -47,16 +48,15 @@ class ClientController extends Controller
                 'order' => 'integer|min:0'
             ]);
 
-            // Si se subió un logo como archivo, moverlo a public/storage/clients
+            // Si se subió un logo como archivo, guardarlo usando Storage (storage/app/public/clients)
             if ($request->hasFile('logo')) {
-                $uploadPath = public_path('storage/clients');
-                if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0755, true);
-                }
-                $extension = $request->file('logo')->getClientOriginalExtension();
+                $file = $request->file('logo');
+                $extension = $file->getClientOriginalExtension();
                 $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
-                $request->file('logo')->move($uploadPath, $filename);
-                $validated['logo'] = 'clients/' . $filename;
+                
+                // Guardar en storage/app/public/clients (accesible vía /storage/clients)
+                $path = Storage::disk('public')->putFileAs('clients', $file, $filename);
+                $validated['logo'] = $path; // Guarda 'clients/filename.ext'
             }
 
             $client = Client::create($validated);
@@ -115,20 +115,17 @@ class ClientController extends Controller
 
             // Si se subió un nuevo logo como archivo, eliminar el anterior y guardar el nuevo
             if ($request->hasFile('logo')) {
+                // Eliminar logo anterior si existe
                 if ($client->logo) {
-                    $oldPath = public_path('storage/' . ltrim($client->logo, '/'));
-                    if (file_exists($oldPath)) {
-                        @unlink($oldPath);
-                    }
+                    Storage::disk('public')->delete($client->logo);
                 }
-                $uploadPath = public_path('storage/clients');
-                if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0755, true);
-                }
-                $extension = $request->file('logo')->getClientOriginalExtension();
+                
+                // Guardar nuevo logo
+                $file = $request->file('logo');
+                $extension = $file->getClientOriginalExtension();
                 $filename = \Illuminate\Support\Str::random(40) . '.' . $extension;
-                $request->file('logo')->move($uploadPath, $filename);
-                $validated['logo'] = 'clients/' . $filename;
+                $path = Storage::disk('public')->putFileAs('clients', $file, $filename);
+                $validated['logo'] = $path; // Guarda 'clients/filename.ext'
             }
 
             $client->update($validated);

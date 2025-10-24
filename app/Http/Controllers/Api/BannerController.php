@@ -81,20 +81,8 @@ class BannerController extends Controller
         $extension = $file->getClientOriginalExtension();
         $filename = Str::random(40) . '.' . $extension;
 
-        // Crear ruta base si no existe
-        $basePath = public_path('storage');
-        if (!file_exists($basePath)) {
-            mkdir($basePath, 0755, true);
-        }
-
-        // Crear directorio específico si no existe
-        $uploadPath = public_path('storage/banners');
-        if (!file_exists($uploadPath)) {
-            mkdir($uploadPath, 0755, true);
-        }
-
-        // Mover archivo
-        $file->move($uploadPath, $filename);
+        // Guardar en storage/app/public/banners (accesible vía /storage/banners)
+        $path = Storage::disk('public')->putFileAs('banners', $file, $filename);
 
         // Retornar URL relativa
         return '/storage/banners/' . $filename;
@@ -132,10 +120,8 @@ class BannerController extends Controller
         if ($request->hasFile('image')) {
             // Eliminar imagen anterior si existe y no es una URL
             if ($banner->image && !filter_var($banner->image, FILTER_VALIDATE_URL)) {
-                $oldImagePath = public_path($banner->image);
-                if (file_exists($oldImagePath)) {
-                    unlink($oldImagePath);
-                }
+                $imagePath = str_replace('/storage/', '', $banner->image);
+                Storage::disk('public')->delete($imagePath);
             }
             
             $imagePath = $this->uploadImage($request->file('image'));
@@ -155,10 +141,8 @@ class BannerController extends Controller
     {
         // Eliminar imagen si existe y no es una URL
         if ($banner->image && !filter_var($banner->image, FILTER_VALIDATE_URL)) {
-            $imagePath = public_path($banner->image);
-            if (file_exists($imagePath)) {
-                unlink($imagePath);
-            }
+            $imagePath = str_replace('/storage/', '', $banner->image);
+            Storage::disk('public')->delete($imagePath);
         }
         
         $banner->delete();
